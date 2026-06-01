@@ -30,6 +30,9 @@ jobs:
       - name: Copy questionnaire
         run: cp questionnaire.html dist/
 
+      - name: Fix base path for GitHub Pages
+        run: sed -i 's|<head>|<head><base href="/tripvoyage/">|' dist/index.html
+
       - uses: actions/configure-pages@v4
 
       - uses: actions/upload-pages-artifact@v3
