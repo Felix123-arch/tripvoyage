@@ -1,0 +1,585 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>TripVoyage - User Testing Questionnaire</title>
+<style>
+  :root {
+    --primary: #2563EB;
+    --primary-container: #DBEAFE;
+    --secondary: #059669;
+    --surface: #FFFFFF;
+    --background: #F0F4F8;
+    --on-surface: #0F172A;
+    --on-surface-variant: #475569;
+    --on-surface-muted: #94A3B8;
+    --outline: #E2E8F0;
+    --error: #DC2626;
+    --radius: 12px;
+    --font: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    font-family: var(--font);
+    background: var(--background);
+    color: var(--on-surface);
+    line-height: 1.5;
+  }
+
+  .container {
+    max-width: 640px;
+    margin: 0 auto;
+    padding: 20px 16px 60px;
+  }
+
+  .header {
+    background: var(--surface);
+    border-bottom: 1px solid var(--outline);
+    padding: 20px 16px;
+    text-align: center;
+    position: sticky;
+    top: 0;
+    z-index: 10;
+  }
+
+  .header h1 {
+    font-size: 20px;
+    font-weight: 700;
+    color: var(--primary);
+  }
+
+  .header p {
+    font-size: 13px;
+    color: var(--on-surface-variant);
+    margin-top: 4px;
+  }
+
+  .progress-bar {
+    height: 4px;
+    background: var(--outline);
+    position: sticky;
+    top: 88px;
+    z-index: 10;
+  }
+
+  .progress-fill {
+    height: 100%;
+    background: var(--primary);
+    transition: width 0.3s ease;
+  }
+
+  .section {
+    background: var(--surface);
+    border-radius: var(--radius);
+    padding: 24px;
+    margin-top: 16px;
+    border: 1px solid var(--outline);
+  }
+
+  .section-title {
+    font-size: 18px;
+    font-weight: 600;
+    margin-bottom: 4px;
+  }
+
+  .section-desc {
+    font-size: 13px;
+    color: var(--on-surface-variant);
+    margin-bottom: 20px;
+  }
+
+  .question {
+    margin-bottom: 20px;
+  }
+
+  .question:last-child { margin-bottom: 0; }
+
+  .q-label {
+    font-size: 15px;
+    font-weight: 500;
+    margin-bottom: 10px;
+  }
+
+  .q-number {
+    color: var(--primary);
+    font-weight: 600;
+  }
+
+  .options { display: flex; flex-direction: column; gap: 8px; }
+
+  .option {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 12px 16px;
+    border: 1.5px solid var(--outline);
+    border-radius: 8px;
+    cursor: pointer;
+    transition: all 0.15s ease;
+    font-size: 14px;
+  }
+
+  .option:hover { border-color: var(--primary); background: #F8FAFC; }
+  .option input[type="radio"] { display: none; }
+  .option .radio-dot {
+    width: 20px;
+    height: 20px;
+    border-radius: 50%;
+    border: 2px solid var(--outline);
+    flex-shrink: 0;
+    position: relative;
+    transition: border-color 0.15s;
+  }
+
+  .option:has(input:checked) {
+    border-color: var(--primary);
+    background: var(--primary-container);
+  }
+
+  .option:has(input:checked) .radio-dot {
+    border-color: var(--primary);
+  }
+
+  .option:has(input:checked) .radio-dot::after {
+    content: '';
+    position: absolute;
+    top: 3px; left: 3px;
+    width: 10px; height: 10px;
+    border-radius: 50%;
+    background: var(--primary);
+  }
+
+  .likert-row {
+    display: flex;
+    justify-content: space-between;
+    gap: 4px;
+  }
+
+  .likert-btn {
+    flex: 1;
+    text-align: center;
+    padding: 14px 0;
+    border: 1.5px solid var(--outline);
+    border-radius: 8px;
+    cursor: pointer;
+    font-size: 14px;
+    font-weight: 600;
+    transition: all 0.15s;
+    background: var(--surface);
+    color: var(--on-surface-variant);
+  }
+
+  .likert-btn:hover { border-color: var(--primary); }
+  .likert-btn.selected {
+    border-color: var(--primary);
+    background: var(--primary);
+    color: white;
+  }
+
+  .likert-labels {
+    display: flex;
+    justify-content: space-between;
+    font-size: 11px;
+    color: var(--on-surface-muted);
+    margin-top: 6px;
+  }
+
+  textarea {
+    width: 100%;
+    min-height: 100px;
+    border: 1.5px solid var(--outline);
+    border-radius: 8px;
+    padding: 12px;
+    font-family: var(--font);
+    font-size: 14px;
+    resize: vertical;
+    outline: none;
+    transition: border-color 0.15s;
+  }
+
+  textarea:focus { border-color: var(--primary); }
+
+  .btn-row {
+    display: flex;
+    gap: 12px;
+    margin-top: 24px;
+  }
+
+  .btn {
+    padding: 14px 28px;
+    border-radius: 8px;
+    font-size: 15px;
+    font-weight: 600;
+    cursor: pointer;
+    border: none;
+    transition: all 0.15s;
+    font-family: var(--font);
+  }
+
+  .btn-primary {
+    background: var(--primary);
+    color: white;
+    flex: 1;
+  }
+
+  .btn-primary:hover { background: #1D4ED8; }
+  .btn-primary:disabled { opacity: 0.4; cursor: not-allowed; }
+
+  .btn-secondary {
+    background: var(--surface);
+    color: var(--primary);
+    border: 1.5px solid var(--primary);
+  }
+
+  .btn-secondary:hover { background: var(--primary-container); }
+
+  .btn-danger {
+    background: var(--surface);
+    color: var(--error);
+    border: 1.5px solid var(--error);
+  }
+
+  .thank-you {
+    text-align: center;
+    padding: 60px 20px;
+  }
+
+  .thank-you h2 { font-size: 28px; color: var(--secondary); margin-bottom: 12px; }
+  .thank-you p { color: var(--on-surface-variant); font-size: 15px; }
+
+  .results-table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-top: 16px;
+  }
+
+  .results-table th {
+    text-align: left;
+    font-size: 12px;
+    color: var(--on-surface-muted);
+    padding: 8px;
+    border-bottom: 1px solid var(--outline);
+  }
+
+  .results-table td {
+    padding: 8px;
+    border-bottom: 1px solid var(--outline);
+    font-size: 14px;
+  }
+
+  .stat-bar {
+    height: 8px;
+    border-radius: 4px;
+    margin-top: 4px;
+  }
+
+  @media (max-width: 480px) {
+    .container { padding: 0 12px 40px; }
+    .section { padding: 16px; margin-top: 12px; }
+    .likert-btn { padding: 10px 0; font-size: 13px; }
+  }
+</style>
+</head>
+<body>
+
+<div class="header">
+  <h1>TripVoyage - User Testing Questionnaire</h1>
+  <p>Please complete all questions after using the TripVoyage app prototype</p>
+</div>
+
+<div class="progress-bar">
+  <div class="progress-fill" id="progressFill" style="width: 0%"></div>
+</div>
+
+<div class="container" id="app"></div>
+
+<script>
+// ============================================================
+// Questionnaire Data
+// ============================================================
+const SECTIONS = [
+  {
+    id: 'A',
+    title: 'Section A: Demographic Information',
+    questions: [
+      { id: 'q1', type: 'radio', label: 'What is your age group?', options: ['18-24','25-34','35-44','45-54','55+'] },
+      { id: 'q2', type: 'radio', label: 'How frequently do you travel for leisure?', options: ['Rarely (once a year or less)','Occasionally (2-3 times per year)','Frequently (4-6 times per year)','Very frequently (7+ times per year)'] },
+      { id: 'q3', type: 'radio', label: 'How comfortable are you with using mobile applications?', options: ['Beginner','Intermediate','Advanced','Expert'] },
+    ]
+  },
+  {
+    id: 'B',
+    title: 'Section B: Ease of Navigation',
+    desc: '5-Point Likert Scale: 1 = Strongly Disagree, 5 = Strongly Agree',
+    questions: [
+      { id: 'q4', type: 'likert5', label: 'The overall layout of the home screen is clear and easy to understand.' },
+      { id: 'q5', type: 'likert5', label: 'I was able to find the search function without difficulty.' },
+      { id: 'q6', type: 'likert5', label: 'Navigating between different screens (Home, Itinerary, Map, Saved, Profile) felt intuitive and seamless.' },
+      { id: 'q7', type: 'likert5', label: 'The bottom navigation bar made it easy to access the main features of the app.' },
+      { id: 'q8', type: 'likert5', label: 'I never felt lost or confused about where I was within the app.' },
+    ]
+  },
+  {
+    id: 'C',
+    title: 'Section C: Map Interactivity',
+    desc: '5-Point Likert Scale',
+    questions: [
+      { id: 'q9', type: 'likert5', label: 'The interactive map was responsive and easy to manipulate (zoom, pan, rotate).' },
+      { id: 'q10', type: 'likert5', label: 'The color-coded map pins helped me quickly identify different types of locations.' },
+      { id: 'q11', type: 'likert5', label: 'Tapping a pin to view location details via the bottom sheet felt natural and informative.' },
+      { id: 'q12', type: 'likert5', label: 'The route visualization feature helped me understand the geographic relationship between planned destinations.' },
+    ]
+  },
+  {
+    id: 'D',
+    title: 'Section D: Login & Account Setup',
+    desc: '5-Point Likert Scale',
+    questions: [
+      { id: 'q13', type: 'likert5', label: 'The account creation / login process was quick and straightforward.' },
+      { id: 'q14', type: 'likert5', label: 'The availability of both phone number and social media login options met my preference.' },
+      { id: 'q15', type: 'likert5', label: 'The travel preference selection (interest tags, budget level) was easy to complete.' },
+    ]
+  },
+  {
+    id: 'E',
+    title: 'Section E: Personalized Recommendations',
+    desc: '5-Point Likert Scale',
+    questions: [
+      { id: 'q16', type: 'likert5', label: "The 'Recommended for You' destinations aligned with my travel interests." },
+      { id: 'q17', type: 'likert5', label: 'I found the category filter chips (Beach, Mountain, City Break, etc.) useful for narrowing down my search.' },
+    ]
+  },
+  {
+    id: 'F',
+    title: 'Section F: Itinerary Management',
+    desc: '5-Point Likert Scale',
+    questions: [
+      { id: 'q18', type: 'likert5', label: 'The timeline-based itinerary view made it easy to understand my trip schedule.' },
+      { id: 'q19', type: 'likert5', label: 'The status tags (Confirmed, Action Required) provided clear information about my bookings.' },
+      { id: 'q20', type: 'likert5', label: 'Adding new activities to my itinerary was a simple and intuitive process.' },
+    ]
+  },
+  {
+    id: 'G',
+    title: 'Section G: Overall Satisfaction',
+    desc: '5-Point Likert Scale',
+    questions: [
+      { id: 'q21', type: 'likert5', label: 'Overall, I am satisfied with the TripVoyage app experience.' },
+      { id: 'q22', type: 'likert5', label: 'I would recommend this app to friends or family for travel planning.' },
+      { id: 'q23', type: 'likert5', label: 'The visual design of the app (colors, typography, layout) is aesthetically pleasing.' },
+    ]
+  },
+  {
+    id: 'H',
+    title: 'Section H: Open-Ended Feedback',
+    questions: [
+      { id: 'q24', type: 'text', label: 'What feature did you find most useful? Please explain why.' },
+      { id: 'q25', type: 'text', label: 'What aspect of the app did you find most confusing or difficult to use?' },
+      { id: 'q26', type: 'text', label: 'Do you have any suggestions for improving the TripVoyage app?' },
+    ]
+  },
+];
+
+// ============================================================
+// State
+// ============================================================
+let answers = {};
+let submitted = false;
+
+// Load saved answers
+try { answers = JSON.parse(localStorage.getItem('tripvoyage_qa') || '{}'); } catch(e) { answers = {}; }
+submitted = localStorage.getItem('tripvoyage_submitted') === 'true';
+
+function save() {
+  localStorage.setItem('tripvoyage_qa', JSON.stringify(answers));
+}
+
+function updateProgress() {
+  const allQ = SECTIONS.flatMap(s => s.questions);
+  const answered = allQ.filter(q => answers[q.id] !== undefined && answers[q.id] !== '').length;
+  const pct = Math.round((answered / allQ.length) * 100);
+  document.getElementById('progressFill').style.width = pct + '%';
+}
+
+function setAnswer(qid, val) {
+  answers[qid] = val;
+  save();
+  updateProgress();
+  render();
+}
+
+// ============================================================
+// Render
+// ============================================================
+function render() {
+  const app = document.getElementById('app');
+
+  if (submitted) {
+    renderResults(app);
+    return;
+  }
+
+  let html = '';
+
+  SECTIONS.forEach(sec => {
+    html += `<div class="section">
+      <div class="section-title">${sec.title}</div>
+      ${sec.desc ? `<div class="section-desc">${sec.desc}</div>` : ''}`;
+
+    sec.questions.forEach((q, qi) => {
+      html += `<div class="question">
+        <div class="q-label"><span class="q-number">${q.id.toUpperCase()}.</span> ${q.label}</div>`;
+
+      if (q.type === 'radio') {
+        html += '<div class="options">';
+        q.options.forEach(opt => {
+          const checked = answers[q.id] === opt ? 'checked' : '';
+          html += `<label class="option" onclick="setAnswer('${q.id}','${opt}')">
+            <span class="radio-dot"></span>
+            <input type="radio" name="${q.id}" value="${opt}" ${checked}>
+            <span>${opt}</span>
+          </label>`;
+        });
+        html += '</div>';
+      }
+
+      if (q.type === 'likert5') {
+        html += '<div class="likert-row">';
+        [1,2,3,4,5].forEach(v => {
+          const sel = answers[q.id] == v ? 'selected' : '';
+          html += `<button class="likert-btn ${sel}" onclick="setAnswer('${q.id}',${v})">${v}</button>`;
+        });
+        html += '</div>';
+        html += '<div class="likert-labels"><span>Strongly Disagree</span><span>Strongly Agree</span></div>';
+      }
+
+      if (q.type === 'text') {
+        const val = answers[q.id] || '';
+        html += `<textarea placeholder="Type your response here..." onchange="setAnswer('${q.id}',this.value)">${escHtml(val)}</textarea>`;
+      }
+
+      html += '</div>';
+    });
+
+    html += '</div>';
+  });
+
+  // Submit button
+  const allQ = SECTIONS.flatMap(s => s.questions);
+  const allAnswered = allQ.every(q => q.type === 'text' || (answers[q.id] !== undefined && answers[q.id] !== ''));
+  html += `<div class="btn-row">
+    <button class="btn btn-secondary" onclick="resetAll()">Reset</button>
+    <button class="btn btn-primary" onclick="handleSubmit()" ${allAnswered ? '' : 'disabled'}>
+      ${allAnswered ? 'Submit Responses' : 'Please answer all questions'}
+    </button>
+  </div>`;
+
+  app.innerHTML = html;
+
+  // Bind textarea existing values
+  setTimeout(() => {
+    document.querySelectorAll('textarea').forEach(ta => {
+      const origOnchange = ta.getAttribute('onchange');
+      ta.addEventListener('change', function() {
+        eval(origOnchange);
+      });
+    });
+  }, 0);
+}
+
+function escHtml(s) { return s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
+
+function handleSubmit() {
+  const allQ = SECTIONS.flatMap(s => s.questions);
+  const allAnswered = allQ.every(q => (answers[q.id] !== undefined && answers[q.id] !== ''));
+  if (!allAnswered) { alert('Please answer all questions before submitting.'); return; }
+
+  localStorage.setItem('tripvoyage_submitted', 'true');
+  submitted = true;
+  render();
+  alert('Thank you! Your responses have been submitted.');
+}
+
+function resetAll() {
+  if (confirm('Clear all answers?')) {
+    answers = {};
+    submitted = false;
+    localStorage.removeItem('tripvoyage_qa');
+    localStorage.removeItem('tripvoyage_submitted');
+    render();
+  }
+}
+
+function renderResults(app) {
+  const allQ = SECTIONS.flatMap(s => s.questions);
+  const likertQs = allQ.filter(q => q.type === 'likert5');
+  const likertVals = likertQs.map(q => parseInt(answers[q.id]) || 0).filter(v => v > 0);
+  const avgLikert = likertVals.length > 0 ? (likertVals.reduce((a,b) => a+b, 0) / likertVals.length).toFixed(2) : '-';
+
+  // Distribution
+  const dist = {1:0,2:0,3:0,4:0,5:0};
+  likertVals.forEach(v => dist[v]++);
+  const maxDist = Math.max(...Object.values(dist), 1);
+
+  let html = `<div class="thank-you">
+    <h2>Thank You!</h2>
+    <p>Your responses have been recorded. Here's a summary of your ratings:</p>
+  </div>
+
+  <div class="section">
+    <div class="section-title">Your Response Summary</div>
+    <table class="results-table">
+      <tr><th>Section</th><th>Question</th><th>Rating</th></tr>`;
+
+  SECTIONS.forEach(sec => {
+    sec.questions.forEach(q => {
+      if (q.type === 'likert5') {
+        html += `<tr>
+          <td>${sec.id}</td>
+          <td style="font-size:13px">${q.label.substring(0,70)}...</td>
+          <td style="font-weight:600;color:${answers[q.id] >= 4 ? 'var(--secondary)' : answers[q.id] <= 2 ? 'var(--error)' : 'var(--primary)'}">${answers[q.id] || '-'} / 5</td>
+        </tr>`;
+      }
+    });
+  });
+
+  html += `</table>
+
+  <div style="margin-top:20px;">
+    <div style="font-weight:600;margin-bottom:8px;">Rating Distribution</div>
+    ${[5,4,3,2,1].map(v => `
+      <div style="display:flex;align-items:center;gap:8px;margin-bottom:6px;">
+        <span style="width:20px;font-weight:600;color:var(--on-surface-variant);">${v}</span>
+        <div style="flex:1;background:var(--outline);border-radius:4px;height:24px;overflow:hidden;">
+          <div style="background:${v>=4?'var(--secondary)':v===3?'var(--primary)':'var(--error)'};height:100%;width:${((dist[v]/maxDist)*100)}%;border-radius:4px;display:flex;align-items:center;padding-left:8px;">
+            <span style="color:white;font-size:12px;font-weight:600;">${dist[v]}</span>
+          </div>
+        </div>
+      </div>
+    `).join('')}
+  </div>
+
+  <div style="margin-top:20px;text-align:center;font-size:18px;">
+    <span style="color:var(--on-surface-variant);">Average Score: </span>
+    <span style="font-weight:700;font-size:28px;color:var(--primary);">${avgLikert}</span>
+    <span style="color:var(--on-surface-variant);"> / 5</span>
+  </div>
+
+  <div class="btn-row">
+    <button class="btn btn-danger" onclick="resetAll()">Reset & Start Over</button>
+  </div>
+  </div>`;
+
+  app.innerHTML = html;
+}
+
+// Init
+render();
+updateProgress();
+</script>
+
+</body>
+</html>
