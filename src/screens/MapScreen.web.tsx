@@ -69,14 +69,12 @@ export function MapScreen({ navigation }: Props) {
 
   useEffect(() => { loadPins(); }, [loadPins]);
 
-  // Get image for a pin: use pin's own image, or its destination's image (via proxy)
+  // Get image for a pin: use pin's own image, or search Unsplash by pin name
   const getPinImage = (pin: api.MapPinData): string | null => {
     if (pin.imageUrl) return getImageUrl(pin.imageUrl);
-    if (pin.destinationId) {
-      const dest = destinations.find((d) => d.id === pin.destinationId);
-      if (dest?.imageUrl) return getImageUrl(dest.imageUrl);
-    }
-    return null;
+    // Dynamic Unsplash search for this specific landmark
+    const query = encodeURIComponent(pin.name.replace(/,/g, ''));
+    return getImageUrl(`https://source.unsplash.com/800x400/?${query}`);
   };
 
   const handleAddToItinerary = async () => {
