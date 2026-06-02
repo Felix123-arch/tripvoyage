@@ -4,6 +4,7 @@ import { useTheme } from '../theme';
 import * as api from '../services';
 
 const AMAP_KEY = '42831c6bf2790eb64446139596d3911e';
+const MAP_ID = 'amap-' + Math.random().toString(36).slice(2, 8);
 
 function loadScript(src: string): Promise<void> {
   return new Promise((resolve, reject) => {
@@ -41,7 +42,6 @@ type PinDetail = api.MapPinData & {};
 
 export function MapScreen({ navigation }: Props) {
   const t = useTheme();
-  const containerId = 'amap-container';
 
   const [mapLoaded, setMapLoaded] = useState(false);
   const [pins, setPins] = useState<PinDetail[]>([]);
@@ -52,6 +52,7 @@ export function MapScreen({ navigation }: Props) {
 
   const mapRef = useRef<any>(null);
   const markersRef = useRef<any[]>([]);
+  const containerRef = useRef<HTMLDivElement | null>(null);
 
   const loadPins = useCallback(async () => {
     setLoading(true);
@@ -81,7 +82,16 @@ export function MapScreen({ navigation }: Props) {
         const AMap = (window as any).AMap;
         if (!AMap) throw new Error('AMap not loaded');
 
-        const container = document.getElementById(containerId);
+        const existing = document.getElementById(MAP_ID);
+        if (!existing) {
+          const div = document.createElement('div');
+          div.id = MAP_ID;
+          div.style.cssText = 'position:absolute;top:0;left:0;right:0;bottom:0;width:100%;height:100%;';
+          const wrapper = document.getElementById('map-wrapper');
+          if (wrapper) wrapper.appendChild(div);
+        }
+
+        const container = document.getElementById(MAP_ID);
         if (!container) return;
 
         const map = new AMap.Map(container, {
@@ -113,6 +123,8 @@ export function MapScreen({ navigation }: Props) {
         try { mapRef.current.map.destroy(); } catch {}
         mapRef.current = null;
       }
+      const el = document.getElementById(MAP_ID);
+      if (el) el.remove();
     };
   }, []);
 
@@ -158,6 +170,9 @@ export function MapScreen({ navigation }: Props) {
     <View style={[s.screen, { backgroundColor: t.colors.background }]}>
       <View style={[s.header, { backgroundColor: t.colors.surface, borderBottomColor: t.colors.outline, paddingHorizontal: t.spacing.lg, paddingTop: t.spacing['2xl'], paddingBottom: t.spacing.md }]}>
         <View style={s.headerRow}>
+          <TouchableOpacity onPress={() => navigation.goBack()} style={[s.backBtn, { paddingRight: t.spacing.sm }]}>
+            <Text style={{ fontSize: 20, color: t.colors.primary }}>{'←'}</Text>
+          </TouchableOpacity>
           <Text style={{ fontSize: 22 }}>{'📍'}</Text>
           <Text style={[s.title, { fontFamily: t.typography.fontFamily, fontWeight: '600', fontSize: t.typography.bodyLg.fontSize, color: t.colors.onSurface, marginLeft: t.spacing.sm }]}>
             Explore Map
@@ -184,9 +199,7 @@ export function MapScreen({ navigation }: Props) {
           </TouchableOpacity>
         </View>
       ) : (
-        <View style={s.mapWrapper}>
-          <View id={containerId} style={s.mapContainer} />
-
+        <View id="map-wrapper" style={s.mapWrapper}>
           <ScrollView
             horizontal
             showsHorizontalScrollIndicator={false}
@@ -274,10 +287,10 @@ const s = StyleSheet.create({
   screen: { flex: 1 },
   header: { borderBottomWidth: 1, zIndex: 10 },
   headerRow: { flexDirection: 'row', alignItems: 'center' },
+  backBtn: {},
   title: {},
   center: { flex: 1, justifyContent: 'center', alignItems: 'center' },
   mapWrapper: { flex: 1, position: 'relative' },
-  mapContainer: { ...StyleSheet.absoluteFillObject },
   filterBar: {
     position: 'absolute', top: 12, left: 0, right: 0,
     paddingVertical: 4,
