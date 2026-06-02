@@ -1,11 +1,21 @@
 import React, { useEffect, useRef, useState, useCallback } from 'react';
 import { View, Text, TouchableOpacity, StyleSheet, ActivityIndicator, ScrollView } from 'react-native';
-import AMapLoader from '@amap/amap-jsapi-loader';
 import { useTheme } from '../theme';
 import * as api from '../services';
 
 const AMAP_KEY = '42831c6bf2790eb64446139596d3911e';
-const AMAP_VERSION = '2.0';
+
+function loadScript(src: string): Promise<void> {
+  return new Promise((resolve, reject) => {
+    const existing = document.querySelector(`script[src="${src}"]`);
+    if (existing) { resolve(); return; }
+    const script = document.createElement('script');
+    script.src = src;
+    script.onload = () => resolve();
+    script.onerror = () => reject(new Error('Failed to load script: ' + src));
+    document.head.appendChild(script);
+  });
+}
 
 interface Props {
   navigation: any;
@@ -63,9 +73,13 @@ export function MapScreen({ navigation }: Props) {
   useEffect(() => {
     let destroyed = false;
 
-    AMapLoader.load({ key: AMAP_KEY, version: AMAP_VERSION })
-      .then((AMap: any) => {
+    const initMap = async () => {
+      try {
+        await loadScript(`https://webapi.amap.com/maps?v=2.0&key=${AMAP_KEY}`);
         if (destroyed) return;
+
+        const AMap = (window as any).AMap;
+        if (!AMap) throw new Error('AMap not loaded');
 
         const container = document.getElementById(containerId);
         if (!container) return;
@@ -83,11 +97,13 @@ export function MapScreen({ navigation }: Props) {
 
         mapRef.current = { AMap, map };
         setMapLoaded(true);
-      })
-      .catch((err: any) => {
+      } catch (err: any) {
         console.error('AMap load error:', err);
-        if (!destroyed) setError('Failed to load map');
-      });
+        if (!destroyed) setError('Failed to load map: ' + (err.message || ''));
+      }
+    };
+
+    initMap();
 
     return () => {
       destroyed = true;
