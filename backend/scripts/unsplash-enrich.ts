@@ -24,10 +24,10 @@ const images: Record<string, string> = {
   'Amsterdam, Netherlands': 'https://images.unsplash.com/photo-1534351590666-13e3e96b5017?w=800',
   'Banff, Canada':          'https://images.unsplash.com/photo-1501786223405-6d024d7c3b8d?w=800',
   'Phuket, Thailand':       'https://images.unsplash.com/photo-1589394815804-964ed0be2eb5?w=800',
-  'Istanbul, Turkey':       'https://images.unsplash.com/photo-1541432901042-2d4bd64b4a9b?w=800',
+  'Istanbul, Turkey':       'https://images.unsplash.com/photo-1527838832700-5059252407fa?w=800',
   'Sydney, Australia':      'https://images.unsplash.com/photo-1506973035872-a4ec16b8e8d9?w=800',
   'Reykjavik, Iceland':     'https://images.unsplash.com/photo-1504829857797-ddff29c27927?w=800',
-  'Chengdu, China':         'https://images.unsplash.com/photo-1628074394536-b9b4cd3e1c95?w=800',
+  'Chengdu, China':         'https://images.unsplash.com/photo-1609859341849-753103648057?w=800',
   'Marrakech, Morocco':     'https://images.unsplash.com/photo-1597212618440-806262de4f6b?w=800',
 };
 
