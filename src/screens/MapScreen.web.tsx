@@ -38,6 +38,7 @@ export function MapScreen({ navigation }: Props) {
   const [mapLoaded, setMapLoaded] = useState(false);
   const [loadError, setLoadError] = useState<string | null>(null);
   const [pins, setPins] = useState<api.MapPinData[]>([]);
+  const [destinations, setDestinations] = useState<api.Destination[]>([]);
   const [selectedPin, setSelectedPin] = useState<api.MapPinData | null>(null);
   const [activeFilter, setActiveFilter] = useState<string | null>(null);
   const [loadingData, setLoadingData] = useState(true);
@@ -54,11 +55,28 @@ export function MapScreen({ navigation }: Props) {
 
   const loadPins = useCallback(async () => {
     setLoadingData(true);
-    try { setPins(await api.getMapPins()); } catch {}
+    try {
+      const [pinData, destData] = await Promise.all([
+        api.getMapPins(),
+        api.getDestinations(),
+      ]);
+      setPins(pinData);
+      setDestinations(destData);
+    } catch {}
     setLoadingData(false);
   }, []);
 
   useEffect(() => { loadPins(); }, [loadPins]);
+
+  // Get image for a pin: use pin's own image, or its destination's image
+  const getPinImage = (pin: api.MapPinData): string | null => {
+    if (pin.imageUrl) return pin.imageUrl;
+    if (pin.destinationId) {
+      const dest = destinations.find((d) => d.id === pin.destinationId);
+      if (dest?.imageUrl) return dest.imageUrl;
+    }
+    return null;
+  };
 
   const handleAddToItinerary = async () => {
     if (!isAuthenticated) {
@@ -217,6 +235,23 @@ export function MapScreen({ navigation }: Props) {
       {selectedPin && (
         <View style={[s.bottomSheet, { backgroundColor: t.colors.surface, borderTopLeftRadius: 20, borderTopRightRadius: 20 }]}>
           <View style={[s.sheetHandle, { backgroundColor: t.colors.outline }]} />
+          {/* Pin Image */}
+          {(() => {
+            const img = getPinImage(selectedPin);
+            if (img) {
+              return (
+                <View style={{ width: '100%', height: 180, borderRadius: 12, overflow: 'hidden', marginBottom: 12 }}>
+                  <img src={img} alt={selectedPin.name} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                </View>
+              );
+            }
+            return (
+              <View style={[s.sheetImgPlaceholder, { backgroundColor: selectedPin.color === 'green' ? '#D1FAE5' : selectedPin.color === 'amber' ? '#FEF3C7' : selectedPin.color === 'red' ? '#FEE2E2' : '#DBEAFE', borderRadius: 12, marginBottom: 12 }]}>
+                <Text style={{ fontSize: 48 }}>{selectedPin.placeType === 'Hotel' ? '🏨' : selectedPin.placeType === 'Restaurant' ? '🍴' : selectedPin.placeType === 'Nature' ? '🌿' : selectedPin.placeType === 'Shopping' ? '🛍' : '📍'}</Text>
+                <Text style={{ fontSize: 12, color: '#6B7280', marginTop: 4 }}>{selectedPin.name}</Text>
+              </View>
+            );
+          })()}
           <View style={s.sheetHeader}>
             <View style={{ flex: 1 }}>
               <Text style={[s.sheetName, { fontWeight: '700', fontSize: 18, color: t.colors.onSurface }]}>{selectedPin.name}</Text>
@@ -308,4 +343,5 @@ const s = StyleSheet.create({
   sheetActions: { flexDirection: 'row', gap: 12 },
   addBtn: { flex: 1, height: 46, justifyContent: 'center', alignItems: 'center' },
   closeBtn: { width: 80, height: 46, justifyContent: 'center', alignItems: 'center' },
+  sheetImgPlaceholder: { width: '100%', height: 180, alignItems: 'center', justifyContent: 'center' },
 });
