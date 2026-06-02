@@ -1,6 +1,7 @@
 import express from 'express';
 import cors from 'cors';
 import rateLimit from 'express-rate-limit';
+import path from 'path';
 import { config } from './config.js';
 import { errorHandler } from './middleware/errorHandler.js';
 import { authRoutes } from './routes/auth.routes.js';
@@ -20,6 +21,7 @@ const app = express();
 
 app.use(cors({ origin: true, credentials: true }));
 app.use(express.json());
+app.use('/images', express.static(path.join(process.cwd(), 'public', 'images')));
 app.use(rateLimit({ windowMs: 15 * 60 * 1000, max: 100, standardHeaders: true, legacyHeaders: false }));
 
 app.use('/api/v1/auth', authRoutes);
