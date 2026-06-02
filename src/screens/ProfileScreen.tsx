@@ -1,4 +1,4 @@
-import { View, Text, ScrollView, StyleSheet, Alert } from 'react-native';
+import { View, Text, ScrollView, StyleSheet, Alert, Modal, TouchableOpacity } from 'react-native';
 import { useState } from 'react';
 import { LinearGradient } from 'expo-linear-gradient';
 import { useTheme } from '../theme';
@@ -10,6 +10,16 @@ interface Props {
 }
 
 const allPreferences = ['Adventure', 'Relaxation', 'Foodie', 'Culture', 'Nature', 'Shopping'];
+
+const LANGUAGE_OPTIONS = ['English', '中文（简体）', '中文（繁體）', '日本語', '한국어', 'Español', 'Français', 'Deutsch'];
+const CURRENCY_OPTIONS = [
+  { label: 'USD ($)', value: 'USD' },
+  { label: 'EUR (€)', value: 'EUR' },
+  { label: 'CNY (¥)', value: 'CNY' },
+  { label: 'JPY (¥)', value: 'JPY' },
+  { label: 'GBP (£)', value: 'GBP' },
+  { label: 'KRW (₩)', value: 'KRW' },
+];
 
 export function ProfileScreen({ navigation }: Props) {
   const t = useTheme();
@@ -26,26 +36,48 @@ export function ProfileScreen({ navigation }: Props) {
     itineraryReminders: user?.itineraryReminders ?? true,
     darkMode: user?.darkMode ?? false,
   });
+  const [showLangPicker, setShowLangPicker] = useState(false);
+  const [showCurrPicker, setShowCurrPicker] = useState(false);
+
+  const handleUpdate = async (data: any) => {
+    try {
+      await updateProfile(data);
+    } catch (err: any) {
+      Alert.alert('Update Failed', err.response?.data?.error || 'Could not save changes. Please try again.');
+    }
+  };
 
   const togglePreference = (pref: string) => {
     const next = preferences.includes(pref)
       ? preferences.filter((p) => p !== pref)
       : [...preferences, pref];
     setPreferences(next);
-    updateProfile({ preferences: next }).catch(() => {});
+    handleUpdate({ preferences: next });
   };
 
   const handleBudgetChange = (b: '$' | '$$' | '$$$') => {
     setBudget(b);
-    updateProfile({ budgetLevel: b }).catch(() => {});
+    handleUpdate({ budgetLevel: b });
   };
 
   const toggleSetting = (key: keyof typeof settings) => {
     setSettings((s) => {
       const next = { ...s, [key]: !s[key] };
-      updateProfile({ [key]: next[key] }).catch(() => {});
+      handleUpdate({ [key]: next[key] });
       return next;
     });
+  };
+
+  const handleLanguageChange = (lang: string) => {
+    setSettings((s) => ({ ...s, language: lang }));
+    setShowLangPicker(false);
+    handleUpdate({ language: lang });
+  };
+
+  const handleCurrencyChange = (curr: { label: string; value: string }) => {
+    setSettings((s) => ({ ...s, currency: curr.label }));
+    setShowCurrPicker(false);
+    handleUpdate({ currency: curr.value });
   };
 
   const handleLogout = () => {
@@ -54,6 +86,8 @@ export function ProfileScreen({ navigation }: Props) {
       { text: 'Log Out', style: 'destructive', onPress: logout },
     ]);
   };
+
+  const currentCurrencyLabel = settings.currency;
 
   return (
     <View style={[s.screen, { backgroundColor: t.colors.background }]}>
@@ -103,24 +137,32 @@ export function ProfileScreen({ navigation }: Props) {
           Settings
         </Text>
         <View style={[s.settingsCard, { backgroundColor: t.colors.surface, borderColor: t.colors.outline, borderRadius: t.radius.md, borderWidth: 1, marginHorizontal: t.spacing.lg, marginTop: t.spacing.sm }]}>
-          <View style={[s.settingRow, { borderBottomColor: t.colors.outlineVariant, padding: t.spacing.lg }]}>
-            <Text style={[s.settingLabel, { fontFamily: t.typography.fontFamily, fontSize: t.typography.body.fontSize, color: t.colors.onSurface }]}>Language</Text>
-            <Text style={[s.settingValue, { fontFamily: t.typography.fontFamily, fontSize: t.typography.body.fontSize, color: t.colors.onSurfaceVariant }]}>{settings.language} {'▼'}</Text>
-          </View>
-          <View style={[s.settingRow, { borderBottomColor: t.colors.outlineVariant, padding: t.spacing.lg }]}>
-            <Text style={[s.settingLabel, { fontFamily: t.typography.fontFamily, fontSize: t.typography.body.fontSize, color: t.colors.onSurface }]}>Currency</Text>
-            <Text style={[s.settingValue, { fontFamily: t.typography.fontFamily, fontSize: t.typography.body.fontSize, color: t.colors.onSurfaceVariant }]}>{settings.currency} {'▼'}</Text>
-          </View>
-          <View style={[s.settingRow, { borderBottomColor: t.colors.outlineVariant, padding: t.spacing.lg }]}>
-            <Text style={[s.settingLabel, { fontFamily: t.typography.fontFamily, fontSize: t.typography.body.fontSize, color: t.colors.onSurface }]}>Flight Alerts</Text>
+          {/* Language - now tappable */}
+          <TouchableOpacity
+            style={[s.settingRow, { borderBottomColor: t.colors.outline, borderBottomWidth: 1, padding: t.spacing.lg }]}
+            onPress={() => setShowLangPicker(true)}
+          >
+            <Text style={[s.settingLabel, { fontSize: t.typography.body.fontSize, color: t.colors.onSurface }]}>Language</Text>
+            <Text style={[s.settingValue, { fontSize: t.typography.body.fontSize, color: t.colors.onSurfaceVariant }]}>{settings.language} {'▼'}</Text>
+          </TouchableOpacity>
+          {/* Currency - now tappable */}
+          <TouchableOpacity
+            style={[s.settingRow, { borderBottomColor: t.colors.outline, borderBottomWidth: 1, padding: t.spacing.lg }]}
+            onPress={() => setShowCurrPicker(true)}
+          >
+            <Text style={[s.settingLabel, { fontSize: t.typography.body.fontSize, color: t.colors.onSurface }]}>Currency</Text>
+            <Text style={[s.settingValue, { fontSize: t.typography.body.fontSize, color: t.colors.onSurfaceVariant }]}>{currentCurrencyLabel} {'▼'}</Text>
+          </TouchableOpacity>
+          <View style={[s.settingRow, { borderBottomColor: t.colors.outline, borderBottomWidth: 1, padding: t.spacing.lg }]}>
+            <Text style={[s.settingLabel, { fontSize: t.typography.body.fontSize, color: t.colors.onSurface }]}>Flight Alerts</Text>
             <Toggle value={settings.flightAlerts} onToggle={() => toggleSetting('flightAlerts')} />
           </View>
-          <View style={[s.settingRow, { borderBottomColor: t.colors.outlineVariant, padding: t.spacing.lg }]}>
-            <Text style={[s.settingLabel, { fontFamily: t.typography.fontFamily, fontSize: t.typography.body.fontSize, color: t.colors.onSurface }]}>Itinerary Reminders</Text>
+          <View style={[s.settingRow, { borderBottomColor: t.colors.outline, borderBottomWidth: 1, padding: t.spacing.lg }]}>
+            <Text style={[s.settingLabel, { fontSize: t.typography.body.fontSize, color: t.colors.onSurface }]}>Itinerary Reminders</Text>
             <Toggle value={settings.itineraryReminders} onToggle={() => toggleSetting('itineraryReminders')} />
           </View>
           <View style={[s.settingRow, { padding: t.spacing.lg }]}>
-            <Text style={[s.settingLabel, { fontFamily: t.typography.fontFamily, fontSize: t.typography.body.fontSize, color: t.colors.onSurface }]}>Dark Mode</Text>
+            <Text style={[s.settingLabel, { fontSize: t.typography.body.fontSize, color: t.colors.onSurface }]}>Dark Mode</Text>
             <Toggle value={settings.darkMode} onToggle={() => toggleSetting('darkMode')} />
           </View>
         </View>
@@ -135,6 +177,40 @@ export function ProfileScreen({ navigation }: Props) {
 
         <View style={{ height: t.spacing['4xl'] }} />
       </ScrollView>
+
+      {/* Language Picker Modal */}
+      <Modal visible={showLangPicker} transparent animationType="fade">
+        <TouchableOpacity style={{ flex: 1, justifyContent: 'center', backgroundColor: 'rgba(0,0,0,0.4)', padding: 40 }} activeOpacity={1} onPress={() => setShowLangPicker(false)}>
+          <View style={{ backgroundColor: t.colors.surface, borderRadius: t.radius.lg, padding: 20 }} onStartShouldSetResponder={() => true}>
+            <Text style={{ fontWeight: '700', fontSize: 18, color: t.colors.onSurface, textAlign: 'center', marginBottom: 12 }}>Select Language</Text>
+            {LANGUAGE_OPTIONS.map((lang) => (
+              <TouchableOpacity key={lang} onPress={() => handleLanguageChange(lang)}
+                style={{ paddingVertical: 12, borderBottomWidth: 1, borderBottomColor: t.colors.outline }}>
+                <Text style={{ color: settings.language === lang ? t.colors.primary : t.colors.onSurface, fontWeight: settings.language === lang ? '700' : '400', fontSize: 15, textAlign: 'center' }}>
+                  {lang} {settings.language === lang ? '✓' : ''}
+                </Text>
+              </TouchableOpacity>
+            ))}
+          </View>
+        </TouchableOpacity>
+      </Modal>
+
+      {/* Currency Picker Modal */}
+      <Modal visible={showCurrPicker} transparent animationType="fade">
+        <TouchableOpacity style={{ flex: 1, justifyContent: 'center', backgroundColor: 'rgba(0,0,0,0.4)', padding: 40 }} activeOpacity={1} onPress={() => setShowCurrPicker(false)}>
+          <View style={{ backgroundColor: t.colors.surface, borderRadius: t.radius.lg, padding: 20 }} onStartShouldSetResponder={() => true}>
+            <Text style={{ fontWeight: '700', fontSize: 18, color: t.colors.onSurface, textAlign: 'center', marginBottom: 12 }}>Select Currency</Text>
+            {CURRENCY_OPTIONS.map((curr) => (
+              <TouchableOpacity key={curr.value} onPress={() => handleCurrencyChange(curr)}
+                style={{ paddingVertical: 12, borderBottomWidth: 1, borderBottomColor: t.colors.outline }}>
+                <Text style={{ color: currentCurrencyLabel === curr.label ? t.colors.primary : t.colors.onSurface, fontWeight: currentCurrencyLabel === curr.label ? '700' : '400', fontSize: 15, textAlign: 'center' }}>
+                  {curr.label} {currentCurrencyLabel === curr.label ? '✓' : ''}
+                </Text>
+              </TouchableOpacity>
+            ))}
+          </View>
+        </TouchableOpacity>
+      </Modal>
     </View>
   );
 }
@@ -154,7 +230,7 @@ const s = StyleSheet.create({
   sectionTitle: {},
   tagGrid: { flexDirection: 'row', flexWrap: 'wrap' },
   settingsCard: {},
-  settingRow: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', borderBottomWidth: 1 },
+  settingRow: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' },
   settingLabel: {},
   settingValue: {},
 });

@@ -58,19 +58,30 @@ export function MapScreen({ navigation }: Props) {
             <View style={[s.mapGradient4, { backgroundColor: '#F0FDF4', opacity: 0.5, borderRadius: 120, width: 120, height: 120, top: '20%', right: '10%' }]} />
           </View>
 
-          {pins.map((pin) => (
-            <MapPin
-              key={pin.id}
-              color={pin.color as 'blue' | 'green' | 'amber' | 'red'}
-              top={pin.positionTop}
-              left={pin.positionLeft}
-              onPress={() => setSelectedPin(pin)}
-            />
-          ))}
+          {pins.map((pin) => {
+            // Compute position from lat/lng for the fake map background
+            // lat range ~25-65 → top 5%-95%, lng range ~-10-175 → left 5%-95%
+            const topPct = Math.max(5, Math.min(95, ((65 - pin.lat) / 40) * 90 + 5));
+            const leftPct = Math.max(5, Math.min(95, ((pin.lng - (-10)) / 185) * 90 + 5));
+            return (
+              <MapPin
+                key={pin.id}
+                color={pin.color as 'blue' | 'green' | 'amber' | 'red'}
+                top={`${topPct}%` as any}
+                left={`${leftPct}%` as any}
+                onPress={() => setSelectedPin(pin)}
+              />
+            );
+          })}
 
           <TouchableOpacity
             style={[s.routeBtn, { backgroundColor: t.colors.surface, borderRadius: t.radius.full, paddingHorizontal: t.spacing.lg, paddingVertical: t.spacing.sm }]}
             activeOpacity={0.8}
+            onPress={() => {
+              if (pins.length > 0) {
+                setSelectedPin(pins[0]);
+              }
+            }}
           >
             <Text style={[s.routeText, { fontFamily: t.typography.fontFamily, fontWeight: '500', fontSize: t.typography.label.fontSize, color: t.colors.onSurface }]}>
               {'↔ Show Route'}

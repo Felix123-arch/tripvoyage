@@ -7,3 +7,5 @@ export * from './articles';
 export * from './reviews';
 export * from './mapPins';
 export * from './questionnaire';
+export * from './saved';
+export * from './wishlist';

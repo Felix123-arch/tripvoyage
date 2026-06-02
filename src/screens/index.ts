@@ -7,3 +7,4 @@ export { GuidesScreen } from './GuidesScreen';
 export { LoginScreen } from './LoginScreen';
 export { RegisterScreen } from './RegisterScreen';
 export { QuestionnaireScreen } from './QuestionnaireScreen';
+export { DestinationDetailScreen } from './DestinationDetailScreen';

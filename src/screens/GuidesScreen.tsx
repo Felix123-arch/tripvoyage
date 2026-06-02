@@ -1,4 +1,4 @@
-import { View, Text, ScrollView, StyleSheet } from 'react-native';
+import { View, Text, ScrollView, StyleSheet, Alert, Modal, TouchableOpacity } from 'react-native';
 import { useState, useEffect, useCallback } from 'react';
 import { useTheme } from '../theme';
 import { ChecklistCard, ArticleCard, ReviewCard, Button, LoadingOverlay, ErrorBanner, EmptyState } from '../components';
@@ -15,6 +15,8 @@ export function GuidesScreen({ navigation }: Props) {
   const [reviews, setReviews] = useState<api.Review[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [selectedArticle, setSelectedArticle] = useState<api.Article | null>(null);
+  const [showArticleModal, setShowArticleModal] = useState(false);
 
   const loadAll = useCallback(async () => {
     setLoading(true);
@@ -54,6 +56,36 @@ export function GuidesScreen({ navigation }: Props) {
     }
   };
 
+  const handleArticlePress = async (article: api.Article) => {
+    try {
+      const full = await api.getArticleById(article.id);
+      setSelectedArticle(full);
+      setShowArticleModal(true);
+    } catch (err: any) {
+      setSelectedArticle(article);
+      setShowArticleModal(true);
+    }
+  };
+
+  const handleContactSupport = () => {
+    Alert.alert(
+      'Customer Support',
+      '📧 Email: support@tripvoyage.app\n📞 Phone: +1 (555) 123-4567\n\nOur team typically responds within 24 hours.',
+      [{ text: 'OK' }]
+    );
+  };
+
+  const handleHelpCenter = () => {
+    const faqs = [
+      '🔹 How to create an itinerary?\n   Go to Itinerary tab → "Create New Itinerary" → fill in details.',
+      '🔹 How to save a destination?\n   Click any destination → tap "♡ Save". Find saved items in the Saved tab.',
+      '🔹 How to use the map?\n   Go to Map tab → browse markers → tap for details → "Add to Itinerary".',
+      '🔹 Can I change my preferences?\n   Yes! Go to Profile tab to update travel preferences and settings.',
+      '🔹 Is my data secure?\n   Yes, we use encrypted connections and never share your data.',
+    ].join('\n\n');
+    Alert.alert('Help Center & FAQs', faqs, [{ text: 'Got it!' }]);
+  };
+
   if (loading) return <LoadingOverlay message="Loading guides..." />;
   if (error) return <ErrorBanner message={error} onRetry={loadAll} />;
 
@@ -65,7 +97,9 @@ export function GuidesScreen({ navigation }: Props) {
             Guides & Help
           </Text>
           <View style={{ flex: 1 }} />
-          <Text style={[s.helpIcon, { color: t.colors.onSurface, fontSize: 22 }]}>{'❓'}</Text>
+          <TouchableOpacity onPress={handleHelpCenter}>
+            <Text style={[s.helpIcon, { color: t.colors.onSurface, fontSize: 22 }]}>{'❓'}</Text>
+          </TouchableOpacity>
         </View>
       </View>
 
@@ -77,11 +111,14 @@ export function GuidesScreen({ navigation }: Props) {
         <Text style={[s.sectionTitle, { fontFamily: t.typography.fontFamily, fontWeight: '600', fontSize: t.typography.headline.fontSize, color: t.colors.onSurface, marginTop: t.spacing['2xl'], paddingHorizontal: t.spacing.lg }]}>
           Curated Guides
         </Text>
-        <Text style={[s.more, { fontFamily: t.typography.fontFamily, fontSize: t.typography.bodySm.fontSize, color: t.colors.primary, paddingHorizontal: t.spacing.lg }]}>More</Text>
         <View style={{ paddingHorizontal: t.spacing.lg, marginTop: t.spacing.md, gap: t.spacing.md }}>
           {articles.length > 0 ? (
             articles.map((article) => (
-              <ArticleCard key={article.id} article={{ ...article, gradient: [article.gradientStart, article.gradientEnd] }} />
+              <ArticleCard
+                key={article.id}
+                article={{ ...article, gradient: [article.gradientStart, article.gradientEnd] }}
+                onPress={() => handleArticlePress(article)}
+              />
             ))
           ) : (
             <EmptyState icon="📖" message="No articles available yet" />
@@ -92,8 +129,8 @@ export function GuidesScreen({ navigation }: Props) {
           Support
         </Text>
         <View style={{ paddingHorizontal: t.spacing.lg, marginTop: t.spacing.md, gap: t.spacing.md }}>
-          <Button title={'🎧 Contact Customer Service'} onPress={() => {}} block />
-          <Button title={'❓ Help Center & FAQs'} onPress={() => {}} variant="secondary" block />
+          <Button title={'🎧 Contact Customer Service'} onPress={handleContactSupport} block />
+          <Button title={'❓ Help Center & FAQs'} onPress={handleHelpCenter} variant="secondary" block />
         </View>
 
         <Text style={[s.sectionTitle, { fontFamily: t.typography.fontFamily, fontWeight: '600', fontSize: t.typography.headline.fontSize, color: t.colors.onSurface, marginTop: t.spacing['2xl'], paddingHorizontal: t.spacing.lg }]}>
@@ -111,6 +148,34 @@ export function GuidesScreen({ navigation }: Props) {
 
         <View style={{ height: t.spacing['4xl'] }} />
       </ScrollView>
+
+      {/* Article Detail Modal */}
+      <Modal visible={showArticleModal} transparent animationType="slide">
+        <View style={{ flex: 1, backgroundColor: 'rgba(0,0,0,0.5)', justifyContent: 'flex-end' }}>
+          <View style={{ backgroundColor: t.colors.surface, borderTopLeftRadius: 20, borderTopRightRadius: 20, padding: 24, maxHeight: '80%' }}>
+            <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 16 }}>
+              <Text style={{ fontWeight: '700', fontSize: 20, color: t.colors.onSurface, flex: 1 }}>{selectedArticle?.title}</Text>
+              <TouchableOpacity onPress={() => setShowArticleModal(false)} style={{ paddingLeft: 16 }}>
+                <Text style={{ fontSize: 20, color: t.colors.onSurfaceMuted }}>✕</Text>
+              </TouchableOpacity>
+            </View>
+            <ScrollView>
+              <Text style={{ fontSize: 14, color: t.colors.onSurfaceVariant, lineHeight: 22 }}>
+                {selectedArticle?.body || selectedArticle?.description || 'Full article content coming soon.'}
+              </Text>
+              {selectedArticle?.readTimeMinutes && (
+                <Text style={{ marginTop: 16, fontSize: 12, color: t.colors.onSurfaceMuted }}>
+                  {selectedArticle.readTimeMinutes} min read
+                </Text>
+              )}
+            </ScrollView>
+            <TouchableOpacity onPress={() => setShowArticleModal(false)}
+              style={{ marginTop: 16, paddingVertical: 12, backgroundColor: t.colors.primary, borderRadius: 8, alignItems: 'center' }}>
+              <Text style={{ color: '#FFF', fontWeight: '600' }}>Close</Text>
+            </TouchableOpacity>
+          </View>
+        </View>
+      </Modal>
     </View>
   );
 }

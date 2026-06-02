@@ -1,6 +1,7 @@
 import React, { useEffect, useRef, useState, useCallback } from 'react';
-import { View, Text, TouchableOpacity, StyleSheet, ActivityIndicator, ScrollView } from 'react-native';
+import { View, Text, TouchableOpacity, StyleSheet, ActivityIndicator, ScrollView, Modal, Alert } from 'react-native';
 import { useTheme } from '../theme';
+import { useAuth } from '../contexts/AuthContext';
 import * as api from '../services';
 
 const AMAP_KEY = '42831c6bf2790eb64446139596d3911e';
@@ -33,12 +34,18 @@ const pinColors: Record<string, string> = {
 
 export function MapScreen({ navigation }: Props) {
   const t = useTheme();
+  const { isAuthenticated } = useAuth();
   const [mapLoaded, setMapLoaded] = useState(false);
   const [loadError, setLoadError] = useState<string | null>(null);
   const [pins, setPins] = useState<api.MapPinData[]>([]);
   const [selectedPin, setSelectedPin] = useState<api.MapPinData | null>(null);
   const [activeFilter, setActiveFilter] = useState<string | null>(null);
   const [loadingData, setLoadingData] = useState(true);
+
+  // Add to itinerary states
+  const [itineraries, setItineraries] = useState<api.Itinerary[]>([]);
+  const [showItineraryModal, setShowItineraryModal] = useState(false);
+  const [addingToItinerary, setAddingToItinerary] = useState(false);
 
   const mapContainerRef = useRef<HTMLDivElement | null>(null);
   const mapInstance = useRef<any>(null);
@@ -52,6 +59,55 @@ export function MapScreen({ navigation }: Props) {
   }, []);
 
   useEffect(() => { loadPins(); }, [loadPins]);
+
+  const handleAddToItinerary = async () => {
+    if (!isAuthenticated) {
+      Alert.alert('Login Required', 'Please log in to add destinations to your itinerary.');
+      return;
+    }
+    if (!selectedPin) return;
+    setAddingToItinerary(true);
+    try {
+      const list = await api.getItineraries('upcoming');
+      if (list.length === 0) {
+        Alert.alert('No Itinerary', 'Create an itinerary first from the Itinerary tab.', [
+          { text: 'OK' },
+          { text: 'Go to Itinerary', onPress: () => navigation.navigate('Main', { screen: 'Itinerary' }) },
+        ]);
+        return;
+      }
+      setItineraries(list);
+      setShowItineraryModal(true);
+    } catch (err: any) {
+      Alert.alert('Error', 'Failed to load itineraries.');
+    } finally {
+      setAddingToItinerary(false);
+    }
+  };
+
+  const handleAddToItineraryDay = async (itineraryId: string, dayId: string) => {
+    if (!selectedPin) return;
+    setAddingToItinerary(true);
+    try {
+      await api.addActivity(itineraryId, dayId, {
+        title: selectedPin.name,
+        type: selectedPin.placeType === 'Restaurant' ? 'dining' :
+              selectedPin.placeType === 'Hotel' ? 'hotel' :
+              selectedPin.placeType === 'Nature' ? 'sightseeing' :
+              selectedPin.placeType === 'Shopping' ? 'shopping' : 'sightseeing',
+        location: selectedPin.name,
+        description: selectedPin.description,
+        status: 'confirmed',
+      });
+      setShowItineraryModal(false);
+      setSelectedPin(null);
+      Alert.alert('Added!', `"${selectedPin.name}" has been added to your itinerary.`);
+    } catch (err: any) {
+      Alert.alert('Error', err.response?.data?.error || 'Failed to add activity.');
+    } finally {
+      setAddingToItinerary(false);
+    }
+  };
 
   // Init map
   useEffect(() => {
@@ -175,8 +231,14 @@ export function MapScreen({ navigation }: Props) {
           <Text style={{ fontSize: 14, color: t.colors.onSurfaceVariant, lineHeight: 20, marginBottom: 8 }}>{selectedPin.description}</Text>
           <Text style={{ color: t.colors.onSurfaceMuted, fontSize: 12, marginBottom: 16 }}>{selectedPin.placeType}</Text>
           <View style={s.sheetActions}>
-            <TouchableOpacity style={[s.addBtn, { backgroundColor: t.colors.primary, borderRadius: t.radius.md }]} onPress={() => setSelectedPin(null)}>
-              <Text style={{ color: '#FFF', fontWeight: '600', fontSize: 15 }}>Add to Itinerary</Text>
+            <TouchableOpacity
+              style={[s.addBtn, { backgroundColor: t.colors.primary, borderRadius: t.radius.md }]}
+              onPress={handleAddToItinerary}
+              disabled={addingToItinerary}
+            >
+              <Text style={{ color: '#FFF', fontWeight: '600', fontSize: 15 }}>
+                {addingToItinerary ? 'Loading...' : 'Add to Itinerary'}
+              </Text>
             </TouchableOpacity>
             <TouchableOpacity style={[s.closeBtn, { borderColor: t.colors.outline, borderRadius: t.radius.md, borderWidth: 1 }]} onPress={() => setSelectedPin(null)}>
               <Text style={{ color: t.colors.onSurface }}>Close</Text>
@@ -184,6 +246,47 @@ export function MapScreen({ navigation }: Props) {
           </View>
         </View>
       )}
+
+      {/* Itinerary Selection Modal */}
+      <Modal visible={showItineraryModal} transparent animationType="slide">
+        <View style={{ flex: 1, justifyContent: 'center', backgroundColor: 'rgba(0,0,0,0.5)', padding: 20 }}>
+          <View style={{ backgroundColor: t.colors.surface, borderRadius: 16, padding: 24, maxHeight: '80%' }}>
+            <Text style={{ fontWeight: '700', fontSize: 20, color: t.colors.onSurface, textAlign: 'center', marginBottom: 16 }}>
+              Add "{selectedPin?.name}" to...
+            </Text>
+            <ScrollView style={{ maxHeight: 400 }}>
+              {itineraries.map((it) => (
+                <View key={it.id} style={{ marginBottom: 16 }}>
+                  <Text style={{ fontWeight: '600', fontSize: 15, color: t.colors.onSurface, marginBottom: 8 }}>
+                    {it.name} ({it.destination})
+                  </Text>
+                  {it.days.map((day) => (
+                    <TouchableOpacity
+                      key={day.id}
+                      style={{ paddingVertical: 10, paddingHorizontal: 12, borderRadius: 8, marginBottom: 4, backgroundColor: t.colors.background }}
+                      onPress={() => handleAddToItineraryDay(it.id, day.id)}
+                      disabled={addingToItinerary}
+                    >
+                      <Text style={{ color: t.colors.primary, fontWeight: '500', fontSize: 14 }}>
+                        Day {day.dayNumber} — {day.date}
+                      </Text>
+                      <Text style={{ color: t.colors.onSurfaceMuted, fontSize: 12 }}>
+                        {day.activities.length} activities
+                      </Text>
+                    </TouchableOpacity>
+                  ))}
+                </View>
+              ))}
+            </ScrollView>
+            <TouchableOpacity
+              style={{ marginTop: 16, paddingVertical: 12, alignItems: 'center', borderTopWidth: 1, borderTopColor: t.colors.outline }}
+              onPress={() => setShowItineraryModal(false)}
+            >
+              <Text style={{ color: t.colors.onSurfaceMuted, fontWeight: '500', fontSize: 15 }}>Cancel</Text>
+            </TouchableOpacity>
+          </View>
+        </View>
+      </Modal>
     </View>
   );
 }

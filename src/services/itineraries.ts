@@ -62,8 +62,7 @@ export async function deleteItinerary(id: string): Promise<void> {
   await api.delete(`/itineraries/${id}`);
 }
 
-export async function addActivity(dayId: string, data: any): Promise<Activity> {
-  // dayId is used to construct the URL; the itinerary ID is inferred
-  const res = await api.post(`/itineraries/any/days/${dayId}/activities`, data);
+export async function addActivity(itineraryId: string, dayId: string, data: any): Promise<Activity> {
+  const res = await api.post(`/itineraries/${itineraryId}/days/${dayId}/activities`, data);
   return res.data;
 }

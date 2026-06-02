@@ -46,7 +46,9 @@ export function HomeScreen({ navigation }: Props) {
           setCurrentTrip({ name: list[0].name, startDate: list[0].startDate, endDate: list[0].endDate });
         }
       })
-      .catch(() => {});
+      .catch(() => {
+        // Trip info is optional — silent failure is ok, user still sees destinations
+      });
   }, []);
 
   return (
@@ -104,7 +106,7 @@ export function HomeScreen({ navigation }: Props) {
                 reviewCount={dest.reviewCount}
                 gradient={[dest.gradientStart, dest.gradientEnd]}
                 imageUrl={dest.imageUrl}
-                onPress={() => {}}
+                onPress={() => navigation.navigate('DestinationDetail', { destination: dest })}
               />
             ))}
           </ScrollView>

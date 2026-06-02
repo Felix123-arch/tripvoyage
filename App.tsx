@@ -3,7 +3,7 @@ import { Text, View, StyleSheet, ActivityIndicator } from 'react-native';
 import { NavigationContainer } from '@react-navigation/native';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
-import { HomeScreen, ItineraryScreen, MapScreen, SavedScreen, ProfileScreen, GuidesScreen, LoginScreen, RegisterScreen, QuestionnaireScreen } from './src/screens';
+import { HomeScreen, ItineraryScreen, MapScreen, SavedScreen, ProfileScreen, GuidesScreen, LoginScreen, RegisterScreen, QuestionnaireScreen, DestinationDetailScreen } from './src/screens';
 import { AuthProvider, useAuth } from './src/contexts/AuthContext';
 import { colors, typography } from './src/theme';
 
@@ -55,7 +55,7 @@ function HomeTabs() {
 }
 
 function AuthGate() {
-  const { isAuthenticated, isLoading } = useAuth();
+  const { isAuthenticated, isLoading, isGuest } = useAuth();
 
   if (isLoading) {
     return (
@@ -65,13 +65,18 @@ function AuthGate() {
     );
   }
 
+  // Authenticated users & guests see the main app
+  // Only unauthenticated non-guests see the login screen
+  const showMain = isAuthenticated || isGuest;
+
   return (
     <Stack.Navigator screenOptions={{ headerShown: false }}>
-      {isAuthenticated ? (
+      {showMain ? (
         <>
           <Stack.Screen name="Main" component={HomeTabs} />
           <Stack.Screen name="Guides" component={GuidesScreen} />
           <Stack.Screen name="Questionnaire" component={QuestionnaireScreen} />
+          <Stack.Screen name="DestinationDetail" component={DestinationDetailScreen} />
         </>
       ) : (
         <>
@@ -80,6 +85,7 @@ function AuthGate() {
           <Stack.Screen name="Main" component={HomeTabs} />
           <Stack.Screen name="Guides" component={GuidesScreen} />
           <Stack.Screen name="Questionnaire" component={QuestionnaireScreen} />
+          <Stack.Screen name="DestinationDetail" component={DestinationDetailScreen} />
         </>
       )}
     </Stack.Navigator>

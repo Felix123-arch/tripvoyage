@@ -22,6 +22,7 @@ interface AuthState {
   token: string | null;
   isLoading: boolean;
   isAuthenticated: boolean;
+  isGuest: boolean;
 }
 
 interface AuthContextValue extends AuthState {
@@ -59,10 +60,11 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     token: null,
     isLoading: true,
     isAuthenticated: false,
+    isGuest: false,
   });
 
   const logout = useCallback(() => {
-    setState({ user: null, token: null, isLoading: false, isAuthenticated: false });
+    setState({ user: null, token: null, isLoading: false, isAuthenticated: false, isGuest: false });
     setAuthToken(null);
     storeToken(null);
   }, []);
@@ -77,12 +79,12 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       setAuthToken(token);
       authService.getMe()
         .then((user) => {
-          setState({ user, token, isLoading: false, isAuthenticated: true });
+          setState({ user, token, isLoading: false, isAuthenticated: true, isGuest: false });
         })
         .catch(() => {
           storeToken(null);
           setAuthToken(null);
-          setState({ user: null, token: null, isLoading: false, isAuthenticated: false });
+          setState({ user: null, token: null, isLoading: false, isAuthenticated: false, isGuest: false });
         });
     } else {
       setState((s) => ({ ...s, isLoading: false }));
@@ -93,14 +95,14 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     const result = await authService.login({ email, password });
     setAuthToken(result.token);
     storeToken(result.token);
-    setState({ user: result.user, token: result.token, isLoading: false, isAuthenticated: true });
+    setState({ user: result.user, token: result.token, isLoading: false, isAuthenticated: true, isGuest: false });
   }, []);
 
   const register = useCallback(async (data: authService.RegisterData) => {
     const result = await authService.register(data);
     setAuthToken(result.token);
     storeToken(result.token);
-    setState({ user: result.user, token: result.token, isLoading: false, isAuthenticated: true });
+    setState({ user: result.user, token: result.token, isLoading: false, isAuthenticated: true, isGuest: false });
   }, []);
 
   const updateProfile = useCallback(async (data: any) => {
@@ -109,7 +111,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   }, []);
 
   const skipLogin = useCallback(() => {
-    setState({ user: null, token: null, isLoading: false, isAuthenticated: false });
+    setState({ user: null, token: null, isLoading: false, isAuthenticated: false, isGuest: true });
   }, []);
 
   return (
