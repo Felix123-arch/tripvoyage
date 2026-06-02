@@ -4,7 +4,7 @@ import { useTheme } from '../theme';
 import { useAuth } from '../contexts/AuthContext';
 import * as api from '../services';
 
-const AMAP_KEY = '42831c6bf2790eb64446139596d3911e';
+const AMAP_KEY = 'f437d8e1df9e233e62b78cad68860eb6';
 
 function loadAmapScript(): Promise<any> {
   return new Promise((resolve, reject) => {
