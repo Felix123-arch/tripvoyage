@@ -27,5 +27,6 @@ export function errorHandler(err: Error, _req: Request, res: Response, _next: Ne
     }
   }
 
-  res.status(500).json({ error: 'Internal server error' });
+  const message = process.env.NODE_ENV === 'production' ? 'Internal server error' : err.message;
+  res.status(500).json({ error: 'Internal server error', detail: err.message, stack: process.env.NODE_ENV !== 'production' ? err.stack : undefined });
 }

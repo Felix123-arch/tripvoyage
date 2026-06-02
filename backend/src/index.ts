@@ -39,6 +39,18 @@ app.get('/api/v1/health', (_req, res) => {
   res.json({ status: 'ok', timestamp: new Date().toISOString() });
 });
 
+app.get('/api/v1/debug', async (_req, res) => {
+  try {
+    const { prisma } = await import('./lib/prisma.js');
+    await prisma.$queryRaw`SELECT 1`;
+    const userCount = await prisma.user.count();
+    const destCount = await prisma.destination.count();
+    res.json({ db: 'connected', users: userCount, destinations: destCount });
+  } catch (err: any) {
+    res.status(500).json({ db: 'error', message: err.message, code: err.code, meta: err.meta });
+  }
+});
+
 app.use(errorHandler);
 
 app.listen(config.port, () => {
