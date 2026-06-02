@@ -74,9 +74,8 @@ export function MapScreen({ navigation }: Props) {
   // Get image for a pin: use pin's own image, or search Unsplash by pin name
   const getPinImage = (pin: api.MapPinData): string | null => {
     if (pin.imageUrl) return getImageUrl(pin.imageUrl);
-    // Dynamic Unsplash search for this specific landmark
-    const query = encodeURIComponent(pin.name.replace(/,/g, ''));
-    return getImageUrl(`https://source.unsplash.com/400x200/?${query}`);
+    // Dynamic Unsplash search — getImageUrl handles encoding
+    return getImageUrl(`https://source.unsplash.com/400x200/?${pin.name}`);
   };
 
   const handleAddToItinerary = async () => {
