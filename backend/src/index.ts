@@ -24,6 +24,35 @@ app.use(express.json());
 app.use('/images', express.static(path.join(process.cwd(), 'public', 'images')));
 app.use(rateLimit({ windowMs: 15 * 60 * 1000, max: 100, standardHeaders: true, legacyHeaders: false }));
 
+// Image proxy — server fetches images so GFW doesn't block them
+app.get('/api/v1/images/proxy', async (req, res) => {
+  try {
+    const url = req.query.url as string;
+    if (!url) { res.status(400).json({ error: 'Missing url param' }); return; }
+
+    const proto = url.startsWith('https') ? await import('https') : await import('http');
+    proto.get(url, (imgRes: any) => {
+      if (imgRes.statusCode && imgRes.statusCode >= 300 && imgRes.statusCode < 400 && imgRes.headers.location) {
+        // Follow redirect
+        const redirectProto = imgRes.headers.location.startsWith('https') ? require('https') : require('http');
+        redirectProto.get(imgRes.headers.location, (redirectRes: any) => {
+          res.set('Content-Type', redirectRes.headers['content-type'] || 'image/jpeg');
+          res.set('Cache-Control', 'public, max-age=86400');
+          redirectRes.pipe(res);
+        });
+        return;
+      }
+      res.set('Content-Type', imgRes.headers['content-type'] || 'image/jpeg');
+      res.set('Cache-Control', 'public, max-age=86400');
+      imgRes.pipe(res);
+    }).on('error', () => {
+      res.status(502).json({ error: 'Image fetch failed' });
+    });
+  } catch {
+    res.status(500).json({ error: 'Proxy error' });
+  }
+});
+
 app.use('/api/v1/auth', authRoutes);
 app.use('/api/v1/destinations', destinationRoutes);
 app.use('/api/v1/itineraries', itineraryRoutes);

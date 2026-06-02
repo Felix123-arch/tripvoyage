@@ -6,6 +6,7 @@ import {
 import { LinearGradient } from 'expo-linear-gradient';
 import { useTheme } from '../theme';
 import { useAuth } from '../contexts/AuthContext';
+import { getImageUrl } from '../utils/imageProxy';
 import * as api from '../services';
 import { Button } from '../components';
 
@@ -144,21 +145,27 @@ export function DestinationDetailScreen({ navigation, route }: Props) {
 
       <ScrollView showsVerticalScrollIndicator={false}>
         {/* Hero Image */}
-        {destination.imageUrl && !imgFailed ? (
-          <Image
-            source={{ uri: destination.imageUrl }}
-            style={s.heroImage}
-            resizeMode="cover"
-            onError={() => setImgFailed(true)}
-          />
-        ) : (
-          <LinearGradient
-            colors={[destination.gradientStart, destination.gradientEnd]}
-            style={s.heroGradient}
-          >
-            <Text style={{ fontSize: 60 }}>{'🏙️'}</Text>
-          </LinearGradient>
-        )}
+        {(() => {
+          const url = getImageUrl(destination.imageUrl);
+          if (url && !imgFailed) {
+            return (
+              <Image
+                source={{ uri: url }}
+                style={s.heroImage}
+                resizeMode="cover"
+                onError={() => setImgFailed(true)}
+              />
+            );
+          }
+          return (
+            <LinearGradient
+              colors={[destination.gradientStart, destination.gradientEnd]}
+              style={s.heroGradient}
+            >
+              <Text style={{ fontSize: 60 }}>{'🏙️'}</Text>
+            </LinearGradient>
+          );
+        })()}
 
         <View style={{ padding: t.spacing.lg }}>
           {/* Title & Category */}

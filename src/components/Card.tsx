@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { TouchableOpacity, View, Text, Image, StyleSheet } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 import { useTheme } from '../theme';
+import { getImageUrl } from '../utils/imageProxy';
 
 interface Props {
   name: string;
@@ -23,21 +24,27 @@ export function Card({ name, description, rating, reviewCount, gradient, imageUr
       activeOpacity={0.9}
       style={[s.card, { borderRadius: t.radius.md, backgroundColor: t.colors.surface, minWidth: 220, maxWidth: 260 }, t.elevation[1] as any]}
     >
-      {imageUrl && !imgFailed ? (
-        <Image
-          source={{ uri: imageUrl }}
-          style={[s.media, { borderTopLeftRadius: t.radius.md, borderTopRightRadius: t.radius.md }]}
-          resizeMode="cover"
-          onError={() => setImgFailed(true)}
-        />
-      ) : (
-        <LinearGradient
-          colors={gradient as unknown as readonly [string, string]}
-          style={[s.media, { borderTopLeftRadius: t.radius.md, borderTopRightRadius: t.radius.md }]}
-        >
-          <Text style={[s.mediaIcon, { fontFamily: t.typography.fontFamily }]}>&#x1F4F7;</Text>
-        </LinearGradient>
-      )}
+      {(() => {
+        const url = getImageUrl(imageUrl);
+        if (url && !imgFailed) {
+          return (
+            <Image
+              source={{ uri: url }}
+              style={[s.media, { borderTopLeftRadius: t.radius.md, borderTopRightRadius: t.radius.md }]}
+              resizeMode="cover"
+              onError={() => setImgFailed(true)}
+            />
+          );
+        }
+        return (
+          <LinearGradient
+            colors={gradient as unknown as readonly [string, string]}
+            style={[s.media, { borderTopLeftRadius: t.radius.md, borderTopRightRadius: t.radius.md }]}
+          >
+            <Text style={[s.mediaIcon, { fontFamily: t.typography.fontFamily }]}>&#x1F4F7;</Text>
+          </LinearGradient>
+        );
+      })()}
       <View style={[s.body, { padding: t.spacing.md }]}>
         <Text style={[s.name, { fontFamily: t.typography.fontFamily, fontWeight: '600', fontSize: t.typography.body.fontSize, color: t.colors.onSurface }]} numberOfLines={1}>
           {name}

@@ -2,6 +2,7 @@ import React, { useEffect, useRef, useState, useCallback } from 'react';
 import { View, Text, TouchableOpacity, StyleSheet, ActivityIndicator, ScrollView, Modal, Alert } from 'react-native';
 import { useTheme } from '../theme';
 import { useAuth } from '../contexts/AuthContext';
+import { getImageUrl } from '../utils/imageProxy';
 import * as api from '../services';
 
 const AMAP_KEY = 'f437d8e1df9e233e62b78cad68860eb6';
@@ -68,12 +69,12 @@ export function MapScreen({ navigation }: Props) {
 
   useEffect(() => { loadPins(); }, [loadPins]);
 
-  // Get image for a pin: use pin's own image, or its destination's image
+  // Get image for a pin: use pin's own image, or its destination's image (via proxy)
   const getPinImage = (pin: api.MapPinData): string | null => {
-    if (pin.imageUrl) return pin.imageUrl;
+    if (pin.imageUrl) return getImageUrl(pin.imageUrl);
     if (pin.destinationId) {
       const dest = destinations.find((d) => d.id === pin.destinationId);
-      if (dest?.imageUrl) return dest.imageUrl;
+      if (dest?.imageUrl) return getImageUrl(dest.imageUrl);
     }
     return null;
   };
