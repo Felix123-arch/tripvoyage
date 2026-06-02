@@ -24,27 +24,55 @@ app.use(express.json());
 app.use('/images', express.static(path.join(process.cwd(), 'public', 'images')));
 app.use(rateLimit({ windowMs: 15 * 60 * 1000, max: 100, standardHeaders: true, legacyHeaders: false }));
 
-// Image proxy — server fetches images so GFW doesn't block them
+// Image proxy with disk cache — server fetches and caches images
+import * as crypto from 'crypto';
+import * as fs from 'fs';
+const CACHE_DIR = path.join(process.cwd(), 'public', 'images', 'cache');
+
 app.get('/api/v1/images/proxy', async (req, res) => {
   try {
     const url = req.query.url as string;
     if (!url) { res.status(400).json({ error: 'Missing url param' }); return; }
 
+    // Check disk cache
+    const cacheKey = crypto.createHash('md5').update(url).digest('hex') + '.jpg';
+    const cachePath = path.join(CACHE_DIR, cacheKey);
+    if (fs.existsSync(cachePath)) {
+      res.set('Content-Type', 'image/jpeg');
+      res.set('Cache-Control', 'public, max-age=86400');
+      fs.createReadStream(cachePath).pipe(res);
+      return;
+    }
+
+    // Fetch from remote
     const proto = url.startsWith('https') ? await import('https') : await import('http');
     proto.get(url, (imgRes: any) => {
       if (imgRes.statusCode && imgRes.statusCode >= 300 && imgRes.statusCode < 400 && imgRes.headers.location) {
-        // Follow redirect
         const redirectProto = imgRes.headers.location.startsWith('https') ? require('https') : require('http');
         redirectProto.get(imgRes.headers.location, (redirectRes: any) => {
-          res.set('Content-Type', redirectRes.headers['content-type'] || 'image/jpeg');
-          res.set('Cache-Control', 'public, max-age=86400');
-          redirectRes.pipe(res);
+          const chunks: Buffer[] = [];
+          redirectRes.on('data', (chunk: Buffer) => chunks.push(chunk));
+          redirectRes.on('end', () => {
+            const buf = Buffer.concat(chunks);
+            if (!fs.existsSync(CACHE_DIR)) fs.mkdirSync(CACHE_DIR, { recursive: true });
+            fs.writeFileSync(cachePath, buf);
+            res.set('Content-Type', redirectRes.headers['content-type'] || 'image/jpeg');
+            res.set('Cache-Control', 'public, max-age=86400');
+            res.end(buf);
+          });
         });
         return;
       }
-      res.set('Content-Type', imgRes.headers['content-type'] || 'image/jpeg');
-      res.set('Cache-Control', 'public, max-age=86400');
-      imgRes.pipe(res);
+      const chunks: Buffer[] = [];
+      imgRes.on('data', (chunk: Buffer) => chunks.push(chunk));
+      imgRes.on('end', () => {
+        const buf = Buffer.concat(chunks);
+        if (!fs.existsSync(CACHE_DIR)) fs.mkdirSync(CACHE_DIR, { recursive: true });
+        fs.writeFileSync(cachePath, buf);
+        res.set('Content-Type', imgRes.headers['content-type'] || 'image/jpeg');
+        res.set('Cache-Control', 'public, max-age=86400');
+        res.end(buf);
+      });
     }).on('error', () => {
       res.status(502).json({ error: 'Image fetch failed' });
     });
