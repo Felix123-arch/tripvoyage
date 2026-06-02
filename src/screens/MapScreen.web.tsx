@@ -71,9 +71,13 @@ export function MapScreen({ navigation }: Props) {
   useEffect(() => { loadPins(); }, [loadPins]);
   useEffect(() => { setImgFailed(false); }, [selectedPin]); // Reset on new pin
 
-  // Get image for a pin — pins now have pre-resolved Unsplash URLs
+  // Get image for a pin: use pin's own image, or fall back to destination image
   const getPinImage = (pin: api.MapPinData): string | null => {
     if (pin.imageUrl) return getImageUrl(pin.imageUrl);
+    if (pin.destinationId) {
+      const dest = destinations.find((d) => d.id === pin.destinationId);
+      if (dest?.imageUrl) return getImageUrl(dest.imageUrl);
+    }
     return null;
   };
 
