@@ -2,6 +2,7 @@ import React, { useEffect, useRef, useState, useCallback } from 'react';
 import { View, Text, TouchableOpacity, StyleSheet, ActivityIndicator, ScrollView, Modal, Alert, Image } from 'react-native';
 import { useTheme } from '../theme';
 import { useAuth } from '../contexts/AuthContext';
+import { useLang } from '../contexts/LanguageContext';
 import { getImageUrl } from '../utils/imageProxy';
 import * as api from '../services';
 
@@ -20,13 +21,13 @@ function loadAmapScript(): Promise<any> {
   });
 }
 
-const typeFilters = [
-  { key: null, label: 'All' },
-  { key: 'Attraction', label: 'Attractions' },
-  { key: 'Hotel', label: 'Hotels' },
-  { key: 'Restaurant', label: 'Food' },
-  { key: 'Nature', label: 'Nature' },
-  { key: 'Shopping', label: 'Shopping' },
+const TYPE_FILTERS = [
+  { key: null, i18n: 'all' as const },
+  { key: 'Attraction', i18n: 'attractions' as const },
+  { key: 'Hotel', i18n: 'hotels' as const },
+  { key: 'Restaurant', i18n: 'food' as const },
+  { key: 'Nature', i18n: 'nature' as const },
+  { key: 'Shopping', i18n: 'shopping' as const },
 ];
 
 const pinColors: Record<string, string> = {
@@ -36,6 +37,7 @@ const pinColors: Record<string, string> = {
 export function MapScreen({ navigation }: Props) {
   const t = useTheme();
   const { isAuthenticated } = useAuth();
+  const { t: tx } = useLang();
   const [mapLoaded, setMapLoaded] = useState(false);
   const [loadError, setLoadError] = useState<string | null>(null);
   const [pins, setPins] = useState<api.MapPinData[]>([]);
@@ -227,9 +229,9 @@ export function MapScreen({ navigation }: Props) {
         <div ref={mapContainerRef} style={{ position: 'absolute', top: 0, left: 0, right: 0, bottom: 0, width: '100%', height: '100%' }} />
 
         <ScrollView horizontal showsHorizontalScrollIndicator={false} style={{ position: 'absolute', top: 12, left: 0, right: 0, zIndex: 5 }} contentContainerStyle={{ gap: 8, paddingHorizontal: 16 }}>
-          {typeFilters.map((f: any) => (
-            <TouchableOpacity key={f.label} style={[s.filterChip, { backgroundColor: activeFilter === f.key ? t.colors.primary : t.colors.surface, borderRadius: t.radius.full, borderColor: t.colors.outline, borderWidth: activeFilter === f.key ? 0 : 1 }]} onPress={() => setActiveFilter(f.key)}>
-              <Text style={{ color: activeFilter === f.key ? '#FFF' : t.colors.onSurface, fontSize: 13, fontWeight: '500' }}>{f.label}</Text>
+          {TYPE_FILTERS.map((f) => (
+            <TouchableOpacity key={f.i18n} style={[s.filterChip, { backgroundColor: activeFilter === f.key ? t.colors.primary : t.colors.surface, borderRadius: t.radius.full, borderColor: t.colors.outline, borderWidth: activeFilter === f.key ? 0 : 1 }]} onPress={() => setActiveFilter(f.key)}>
+              <Text style={{ color: activeFilter === f.key ? '#FFF' : t.colors.onSurface, fontSize: 13, fontWeight: '500' }}>{tx(f.i18n)}</Text>
             </TouchableOpacity>
           ))}
         </ScrollView>

@@ -4,6 +4,7 @@ import { LinearGradient } from 'expo-linear-gradient';
 import { useTheme } from '../theme';
 import { Tag, BudgetSelector, Toggle, Button } from '../components';
 import { useAuth } from '../contexts/AuthContext';
+import { useLang } from '../contexts/LanguageContext';
 
 interface Props {
   navigation: any;
@@ -11,7 +12,10 @@ interface Props {
 
 const allPreferences = ['Adventure', 'Relaxation', 'Foodie', 'Culture', 'Nature', 'Shopping'];
 
-const LANGUAGE_OPTIONS = ['English', '中文（简体）', '中文（繁體）', '日本語', '한국어', 'Español', 'Français', 'Deutsch'];
+const LANGUAGE_OPTIONS = [
+  { label: 'English', value: 'en' as const },
+  { label: '中文（简体）', value: 'zh' as const },
+];
 const CURRENCY_OPTIONS = [
   { label: 'USD ($)', value: 'USD' },
   { label: 'EUR (€)', value: 'EUR' },
@@ -24,6 +28,7 @@ const CURRENCY_OPTIONS = [
 export function ProfileScreen({ navigation }: Props) {
   const t = useTheme();
   const { user, logout, updateProfile } = useAuth();
+  const { lang, setLang, t: tx } = useLang();
 
   const [preferences, setPreferences] = useState<string[]>(
     (user?.preferences || []).map((p: any) => typeof p === 'string' ? p : p.preference)
@@ -68,10 +73,11 @@ export function ProfileScreen({ navigation }: Props) {
     });
   };
 
-  const handleLanguageChange = (lang: string) => {
-    setSettings((s) => ({ ...s, language: lang }));
+  const handleLanguageChange = (opt: { label: string; value: 'en' | 'zh' }) => {
+    setSettings((s) => ({ ...s, language: opt.label }));
+    setLang(opt.value);
     setShowLangPicker(false);
-    handleUpdate({ language: lang });
+    handleUpdate({ language: opt.label });
   };
 
   const handleCurrencyChange = (curr: { label: string; value: string }) => {
@@ -81,9 +87,9 @@ export function ProfileScreen({ navigation }: Props) {
   };
 
   const handleLogout = () => {
-    Alert.alert('Log Out', 'Are you sure you want to log out?', [
-      { text: 'Cancel', style: 'cancel' },
-      { text: 'Log Out', style: 'destructive', onPress: logout },
+    Alert.alert(tx('logoutTitle'), tx('logoutMsg'), [
+      { text: tx('cancel'), style: 'cancel' },
+      { text: tx('logOut'), style: 'destructive', onPress: logout },
     ]);
   };
 
@@ -118,7 +124,7 @@ export function ProfileScreen({ navigation }: Props) {
         </View>
 
         <Text style={[s.sectionTitle, { fontFamily: t.typography.fontFamily, fontWeight: '600', fontSize: t.typography.body.fontSize, color: t.colors.onSurface, paddingHorizontal: t.spacing.lg }]}>
-          Travel Preferences
+          {tx('travelPreferences')}
         </Text>
         <View style={[s.tagGrid, { paddingHorizontal: t.spacing.lg, marginTop: t.spacing.sm, gap: t.spacing.sm }]}>
           {allPreferences.map((pref) => (
@@ -127,14 +133,14 @@ export function ProfileScreen({ navigation }: Props) {
         </View>
 
         <Text style={[s.sectionTitle, { fontFamily: t.typography.fontFamily, fontWeight: '600', fontSize: t.typography.body.fontSize, color: t.colors.onSurface, paddingHorizontal: t.spacing.lg, marginTop: t.spacing['2xl'] }]}>
-          Budget Level
+          {tx('budgetLevel')}
         </Text>
         <View style={{ paddingHorizontal: t.spacing.lg, marginTop: t.spacing.sm }}>
           <BudgetSelector value={budget} onChange={handleBudgetChange} />
         </View>
 
         <Text style={[s.sectionTitle, { fontFamily: t.typography.fontFamily, fontWeight: '600', fontSize: t.typography.body.fontSize, color: t.colors.onSurface, paddingHorizontal: t.spacing.lg, marginTop: t.spacing['2xl'] }]}>
-          Settings
+          {tx('settings')}
         </Text>
         <View style={[s.settingsCard, { backgroundColor: t.colors.surface, borderColor: t.colors.outline, borderRadius: t.radius.md, borderWidth: 1, marginHorizontal: t.spacing.lg, marginTop: t.spacing.sm }]}>
           {/* Language - now tappable */}
@@ -142,7 +148,7 @@ export function ProfileScreen({ navigation }: Props) {
             style={[s.settingRow, { borderBottomColor: t.colors.outline, borderBottomWidth: 1, padding: t.spacing.lg }]}
             onPress={() => setShowLangPicker(true)}
           >
-            <Text style={[s.settingLabel, { fontSize: t.typography.body.fontSize, color: t.colors.onSurface }]}>Language</Text>
+            <Text style={[s.settingLabel, { fontSize: t.typography.body.fontSize, color: t.colors.onSurface }]}>{tx('language')}</Text>
             <Text style={[s.settingValue, { fontSize: t.typography.body.fontSize, color: t.colors.onSurfaceVariant }]}>{settings.language} {'▼'}</Text>
           </TouchableOpacity>
           {/* Currency - now tappable */}
@@ -150,29 +156,29 @@ export function ProfileScreen({ navigation }: Props) {
             style={[s.settingRow, { borderBottomColor: t.colors.outline, borderBottomWidth: 1, padding: t.spacing.lg }]}
             onPress={() => setShowCurrPicker(true)}
           >
-            <Text style={[s.settingLabel, { fontSize: t.typography.body.fontSize, color: t.colors.onSurface }]}>Currency</Text>
+            <Text style={[s.settingLabel, { fontSize: t.typography.body.fontSize, color: t.colors.onSurface }]}>{tx('currency')}</Text>
             <Text style={[s.settingValue, { fontSize: t.typography.body.fontSize, color: t.colors.onSurfaceVariant }]}>{currentCurrencyLabel} {'▼'}</Text>
           </TouchableOpacity>
           <View style={[s.settingRow, { borderBottomColor: t.colors.outline, borderBottomWidth: 1, padding: t.spacing.lg }]}>
-            <Text style={[s.settingLabel, { fontSize: t.typography.body.fontSize, color: t.colors.onSurface }]}>Flight Alerts</Text>
+            <Text style={[s.settingLabel, { fontSize: t.typography.body.fontSize, color: t.colors.onSurface }]}>{tx('flightAlerts')}</Text>
             <Toggle value={settings.flightAlerts} onToggle={() => toggleSetting('flightAlerts')} />
           </View>
           <View style={[s.settingRow, { borderBottomColor: t.colors.outline, borderBottomWidth: 1, padding: t.spacing.lg }]}>
-            <Text style={[s.settingLabel, { fontSize: t.typography.body.fontSize, color: t.colors.onSurface }]}>Itinerary Reminders</Text>
+            <Text style={[s.settingLabel, { fontSize: t.typography.body.fontSize, color: t.colors.onSurface }]}>{tx('itineraryReminders')}</Text>
             <Toggle value={settings.itineraryReminders} onToggle={() => toggleSetting('itineraryReminders')} />
           </View>
           <View style={[s.settingRow, { padding: t.spacing.lg }]}>
-            <Text style={[s.settingLabel, { fontSize: t.typography.body.fontSize, color: t.colors.onSurface }]}>Dark Mode</Text>
+            <Text style={[s.settingLabel, { fontSize: t.typography.body.fontSize, color: t.colors.onSurface }]}>{tx('darkMode')}</Text>
             <Toggle value={settings.darkMode} onToggle={() => toggleSetting('darkMode')} />
           </View>
         </View>
 
         <View style={{ paddingHorizontal: t.spacing.lg, marginTop: t.spacing.lg }}>
-          <Button title={'📝 Take User Survey'} onPress={() => navigation.navigate('Questionnaire')} variant="secondary" block />
+          <Button title={tx('takeSurvey')} onPress={() => navigation.navigate('Questionnaire')} variant="secondary" block />
         </View>
 
         <View style={{ paddingHorizontal: t.spacing.lg, marginTop: t.spacing.lg }}>
-          <Button title={'🚪 Log Out'} onPress={handleLogout} variant="danger" block />
+          <Button title={tx('logOut')} onPress={handleLogout} variant="danger" block />
         </View>
 
         <View style={{ height: t.spacing['4xl'] }} />
@@ -182,12 +188,12 @@ export function ProfileScreen({ navigation }: Props) {
       <Modal visible={showLangPicker} transparent animationType="fade">
         <TouchableOpacity style={{ flex: 1, justifyContent: 'center', backgroundColor: 'rgba(0,0,0,0.4)', padding: 40 }} activeOpacity={1} onPress={() => setShowLangPicker(false)}>
           <View style={{ backgroundColor: t.colors.surface, borderRadius: t.radius.lg, padding: 20 }} onStartShouldSetResponder={() => true}>
-            <Text style={{ fontWeight: '700', fontSize: 18, color: t.colors.onSurface, textAlign: 'center', marginBottom: 12 }}>Select Language</Text>
-            {LANGUAGE_OPTIONS.map((lang) => (
-              <TouchableOpacity key={lang} onPress={() => handleLanguageChange(lang)}
+            <Text style={{ fontWeight: '700', fontSize: 18, color: t.colors.onSurface, textAlign: 'center', marginBottom: 12 }}>{tx('selectLang')}</Text>
+            {LANGUAGE_OPTIONS.map((opt) => (
+              <TouchableOpacity key={opt.value} onPress={() => handleLanguageChange(opt)}
                 style={{ paddingVertical: 12, borderBottomWidth: 1, borderBottomColor: t.colors.outline }}>
-                <Text style={{ color: settings.language === lang ? t.colors.primary : t.colors.onSurface, fontWeight: settings.language === lang ? '700' : '400', fontSize: 15, textAlign: 'center' }}>
-                  {lang} {settings.language === lang ? '✓' : ''}
+                <Text style={{ color: lang === opt.value ? t.colors.primary : t.colors.onSurface, fontWeight: lang === opt.value ? '700' : '400', fontSize: 15, textAlign: 'center' }}>
+                  {opt.label} {lang === opt.value ? '✓' : ''}
                 </Text>
               </TouchableOpacity>
             ))}

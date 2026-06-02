@@ -5,6 +5,7 @@ import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import { HomeScreen, ItineraryScreen, MapScreen, SavedScreen, ProfileScreen, GuidesScreen, LoginScreen, RegisterScreen, QuestionnaireScreen, DestinationDetailScreen } from './src/screens';
 import { AuthProvider, useAuth } from './src/contexts/AuthContext';
+import { LanguageProvider, useLang } from './src/contexts/LanguageContext';
 import { colors, typography } from './src/theme';
 
 const Tab = createBottomTabNavigator();
@@ -19,6 +20,7 @@ function TabIcon({ emoji, focused }: { emoji: string; focused: boolean }) {
 }
 
 function HomeTabs() {
+  const { t } = useLang();
   return (
     <Tab.Navigator
       screenOptions={{
@@ -41,15 +43,15 @@ function HomeTabs() {
       }}
     >
       <Tab.Screen name="Home" component={HomeScreen}
-        options={{ tabBarIcon: ({ focused }) => <TabIcon emoji="🏠" focused={focused} />, tabBarLabel: 'Home' }} />
+        options={{ tabBarIcon: ({ focused }) => <TabIcon emoji="🏠" focused={focused} />, tabBarLabel: t('home') }} />
       <Tab.Screen name="Itinerary" component={ItineraryScreen}
-        options={{ tabBarIcon: ({ focused }) => <TabIcon emoji="📋" focused={focused} />, tabBarLabel: 'Itinerary' }} />
+        options={{ tabBarIcon: ({ focused }) => <TabIcon emoji="📋" focused={focused} />, tabBarLabel: t('itinerary') }} />
       <Tab.Screen name="Map" component={MapScreen}
-        options={{ tabBarIcon: ({ focused }) => <TabIcon emoji="🗺️" focused={focused} />, tabBarLabel: 'Map' }} />
+        options={{ tabBarIcon: ({ focused }) => <TabIcon emoji="🗺️" focused={focused} />, tabBarLabel: t('map') }} />
       <Tab.Screen name="Saved" component={SavedScreen}
-        options={{ tabBarIcon: ({ focused }) => <TabIcon emoji="🔖" focused={focused} />, tabBarLabel: 'Saved' }} />
+        options={{ tabBarIcon: ({ focused }) => <TabIcon emoji="🔖" focused={focused} />, tabBarLabel: t('saved') }} />
       <Tab.Screen name="Profile" component={ProfileScreen}
-        options={{ tabBarIcon: ({ focused }) => <TabIcon emoji="👤" focused={focused} />, tabBarLabel: 'Profile' }} />
+        options={{ tabBarIcon: ({ focused }) => <TabIcon emoji="👤" focused={focused} />, tabBarLabel: t('profile') }} />
     </Tab.Navigator>
   );
 }
@@ -95,10 +97,12 @@ function AuthGate() {
 export default function App() {
   return (
     <AuthProvider>
-      <NavigationContainer>
-        <AuthGate />
-        <StatusBar style="dark" />
-      </NavigationContainer>
+      <LanguageProvider>
+        <NavigationContainer>
+          <AuthGate />
+          <StatusBar style="dark" />
+        </NavigationContainer>
+      </LanguageProvider>
     </AuthProvider>
   );
 }

@@ -1,6 +1,7 @@
 import { View, Text, ScrollView, StyleSheet } from 'react-native';
 import { useState, useEffect, useCallback } from 'react';
 import { useTheme } from '../theme';
+import { useLang } from '../contexts/LanguageContext';
 import { SearchBar, Chip, Card, Button, LoadingOverlay, ErrorBanner, EmptyState } from '../components';
 import * as api from '../services';
 
@@ -12,6 +13,7 @@ const allCategories = ['All', 'Beach', 'Mountain', 'City Break', 'Family', 'Adve
 
 export function HomeScreen({ navigation }: Props) {
   const t = useTheme();
+  const { t: tx } = useLang();
   const [search, setSearch] = useState('');
   const [activeCategory, setActiveCategory] = useState('All');
   const [destinations, setDestinations] = useState<api.Destination[]>([]);
@@ -68,7 +70,7 @@ export function HomeScreen({ navigation }: Props) {
 
       <ScrollView style={s.scroll} showsVerticalScrollIndicator={false}>
         <View style={{ paddingHorizontal: t.spacing.lg, marginTop: t.spacing.lg }}>
-          <SearchBar value={search} onChangeText={setSearch} placeholder="Search destinations, hotels, flights..." />
+          <SearchBar value={search} onChangeText={setSearch} placeholder={tx('searchPlaceholder')} />
         </View>
 
         <ScrollView
@@ -82,7 +84,7 @@ export function HomeScreen({ navigation }: Props) {
         </ScrollView>
 
         <Text style={[s.sectionTitle, { fontFamily: t.typography.fontFamily, fontWeight: '600', fontSize: t.typography.headline.fontSize, color: t.colors.onSurface, marginTop: t.spacing['2xl'], paddingHorizontal: t.spacing.lg }]}>
-          Recommended for You
+          {tx('recommended')}
         </Text>
 
         {loading ? (
@@ -113,19 +115,19 @@ export function HomeScreen({ navigation }: Props) {
         )}
 
         <Text style={[s.sectionTitle, { fontFamily: t.typography.fontFamily, fontWeight: '600', fontSize: t.typography.headline.fontSize, color: t.colors.onSurface, marginTop: t.spacing['2xl'], paddingHorizontal: t.spacing.lg }]}>
-          Quick Actions
+          {tx('quickActions')}
         </Text>
         <View style={[s.quickRow, { paddingHorizontal: t.spacing.lg, marginTop: t.spacing.md }]}>
           <View style={s.quickLeft}>
-            <Button title="+ Create New Itinerary" onPress={() => navigation.navigate('Itinerary')} block />
+            <Button title={tx('createItinerary')} onPress={() => navigation.navigate('Itinerary')} block />
           </View>
           <View style={[s.quickRight, { gap: t.spacing.sm }]}>
             <View style={[s.tripSnippet, { backgroundColor: t.colors.surface, borderRadius: t.radius.md, padding: t.spacing.md, borderColor: t.colors.outline, borderWidth: 1 }]}>
               <Text style={[s.tripLabel, { fontFamily: t.typography.fontFamily, fontSize: t.typography.caption.fontSize, color: t.colors.onSurfaceMuted }]}>
-                Current Trip
+                {tx('currentTrip')}
               </Text>
               <Text style={[s.tripName, { fontFamily: t.typography.fontFamily, fontWeight: '700', fontSize: t.typography.body.fontSize, color: t.colors.onSurface }]}>
-                {currentTrip?.name || 'No upcoming trips'}
+                {currentTrip?.name || tx('noUpcomingTrips')}
               </Text>
               {currentTrip && (
                 <Text style={[s.tripDates, { fontFamily: t.typography.fontFamily, fontSize: t.typography.caption.fontSize, color: t.colors.onSurfaceVariant }]}>
@@ -133,7 +135,7 @@ export function HomeScreen({ navigation }: Props) {
                 </Text>
               )}
             </View>
-            <Button title={'🗺 Explore Map'} onPress={() => navigation.navigate('Map')} variant="outline" block />
+            <Button title={tx('exploreMap')} onPress={() => navigation.navigate('Map')} variant="outline" block />
           </View>
         </View>
         <View style={{ height: t.spacing['4xl'] }} />
