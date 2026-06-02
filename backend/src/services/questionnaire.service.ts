@@ -47,7 +47,7 @@ export async function getStats() {
 
   return {
     totalResponses: all.length,
-    uniqueSessions: new Set(all.map((r) => r.sessionId)).size,
+    uniqueSessions: new Set(all.map((r: any) => r.sessionId)).size,
     byQuestion: stats,
   };
 }

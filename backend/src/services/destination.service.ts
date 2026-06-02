@@ -26,5 +26,5 @@ export async function getCategories() {
     select: { category: true },
     distinct: ['category'],
   });
-  return results.map((r) => r.category);
+  return results.map((r: any) => r.category);
 }
