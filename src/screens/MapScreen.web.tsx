@@ -74,7 +74,7 @@ export function MapScreen({ navigation }: Props) {
     if (pin.imageUrl) return getImageUrl(pin.imageUrl);
     // Dynamic Unsplash search for this specific landmark
     const query = encodeURIComponent(pin.name.replace(/,/g, ''));
-    return getImageUrl(`https://source.unsplash.com/800x400/?${query}`);
+    return getImageUrl(`https://source.unsplash.com/400x200/?${query}`);
   };
 
   const handleAddToItinerary = async () => {
