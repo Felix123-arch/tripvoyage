@@ -1,5 +1,5 @@
 import React, { useEffect, useRef, useState, useCallback } from 'react';
-import { View, Text, TouchableOpacity, StyleSheet, ActivityIndicator, ScrollView, Modal, Alert } from 'react-native';
+import { View, Text, TouchableOpacity, StyleSheet, ActivityIndicator, ScrollView, Modal, Alert, Image } from 'react-native';
 import { useTheme } from '../theme';
 import { useAuth } from '../contexts/AuthContext';
 import { getImageUrl } from '../utils/imageProxy';
@@ -48,6 +48,7 @@ export function MapScreen({ navigation }: Props) {
   const [itineraries, setItineraries] = useState<api.Itinerary[]>([]);
   const [showItineraryModal, setShowItineraryModal] = useState(false);
   const [addingToItinerary, setAddingToItinerary] = useState(false);
+  const [imgFailed, setImgFailed] = useState(false);
 
   const mapContainerRef = useRef<HTMLDivElement | null>(null);
   const mapInstance = useRef<any>(null);
@@ -68,6 +69,7 @@ export function MapScreen({ navigation }: Props) {
   }, []);
 
   useEffect(() => { loadPins(); }, [loadPins]);
+  useEffect(() => { setImgFailed(false); }, [selectedPin]); // Reset on new pin
 
   // Get image for a pin: use pin's own image, or search Unsplash by pin name
   const getPinImage = (pin: api.MapPinData): string | null => {
@@ -237,10 +239,14 @@ export function MapScreen({ navigation }: Props) {
           {/* Pin Image */}
           {(() => {
             const img = getPinImage(selectedPin);
-            if (img) {
+            if (img && !imgFailed) {
               return (
                 <View style={{ width: '100%', height: 180, borderRadius: 12, overflow: 'hidden', marginBottom: 12 }}>
-                  <img src={img} alt={selectedPin.name} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                  <Image source={{ uri: img }}
+                    style={{ width: '100%', height: '100%' }}
+                    resizeMode="cover"
+                    onError={() => setImgFailed(true)}
+                  />
                 </View>
               );
             }
