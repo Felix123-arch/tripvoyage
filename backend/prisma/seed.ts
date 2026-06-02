@@ -26,7 +26,7 @@ const destinationData: DestSeed[] = [
     category: 'City Break',
     rating: 4.9, reviewCount: 3892,
     gradientStart: '#1E40AF', gradientEnd: '#3B82F6',
-    imageUrl: unsplash('1540959733332-eab4de79f93a'),
+    imageUrl: '',
     lat: 35.6762, lng: 139.6503,
   },
   {
@@ -35,7 +35,7 @@ const destinationData: DestSeed[] = [
     category: 'Relaxation',
     rating: 4.7, reviewCount: 1678,
     gradientStart: '#6B21A8', gradientEnd: '#8B5CF6',
-    imageUrl: unsplash('1493976040374-85f9e3b84c0d'),
+    imageUrl: '',
     lat: 35.0116, lng: 135.7681,
   },
   {
@@ -44,7 +44,7 @@ const destinationData: DestSeed[] = [
     category: 'City Break',
     rating: 4.9, reviewCount: 4521,
     gradientStart: '#92400E', gradientEnd: '#D97706',
-    imageUrl: unsplash('1502601598650-6df8742b6233'),
+    imageUrl: '',
     lat: 48.8566, lng: 2.3522,
   },
   {
@@ -53,7 +53,7 @@ const destinationData: DestSeed[] = [
     category: 'Beach',
     rating: 4.8, reviewCount: 2341,
     gradientStart: '#BE185D', gradientEnd: '#EC4899',
-    imageUrl: unsplash('1537996194471-e657f9e13f8a'),
+    imageUrl: '',
     lat: -8.3405, lng: 115.0920,
   },
   {
@@ -62,7 +62,7 @@ const destinationData: DestSeed[] = [
     category: 'Mountain',
     rating: 4.7, reviewCount: 1856,
     gradientStart: '#065F46', gradientEnd: '#10B981',
-    imageUrl: unsplash('1530122037865-0690def0e1e5'),
+    imageUrl: '',
     lat: 46.6863, lng: 7.8632,
   },
   {
@@ -71,7 +71,7 @@ const destinationData: DestSeed[] = [
     category: 'Beach',
     rating: 4.8, reviewCount: 2156,
     gradientStart: '#0D9488', gradientEnd: '#2DD4BF',
-    imageUrl: unsplash('1504512485720-7b48ea80a0a1'),
+    imageUrl: '',
     lat: 36.3932, lng: 25.4615,
   },
   {
@@ -80,7 +80,7 @@ const destinationData: DestSeed[] = [
     category: 'City Break',
     rating: 4.7, reviewCount: 5623,
     gradientStart: '#1E293B', gradientEnd: '#64748B',
-    imageUrl: unsplash('1496442229209-223f8c3f96a6'),
+    imageUrl: '',
     lat: 40.7128, lng: -74.0060,
   },
   {
@@ -89,7 +89,7 @@ const destinationData: DestSeed[] = [
     category: 'City Break',
     rating: 4.6, reviewCount: 3210,
     gradientStart: '#991B1B', gradientEnd: '#DC2626',
-    imageUrl: unsplash('1508808787069-7b78b7aec0a2'),
+    imageUrl: '',
     lat: 39.9042, lng: 116.4074,
   },
   {
@@ -98,7 +98,7 @@ const destinationData: DestSeed[] = [
     category: 'City Break',
     rating: 4.5, reviewCount: 2890,
     gradientStart: '#1E3A5F', gradientEnd: '#3B82F6',
-    imageUrl: unsplash('1537538496897-2b8bd5ed2006'),
+    imageUrl: '',
     lat: 31.2304, lng: 121.4737,
   },
   {
@@ -107,7 +107,7 @@ const destinationData: DestSeed[] = [
     category: 'Adventure',
     rating: 4.9, reviewCount: 1850,
     gradientStart: '#374151', gradientEnd: '#6B7280',
-    imageUrl: unsplash('1526392069555-7dfc08bed55c'),
+    imageUrl: '',
     lat: -13.1631, lng: -72.5450,
   },
   {
@@ -116,7 +116,7 @@ const destinationData: DestSeed[] = [
     category: 'Beach',
     rating: 4.9, reviewCount: 1245,
     gradientStart: '#0E7490', gradientEnd: '#06B6D4',
-    imageUrl: unsplash('1514282401047-d79a71a590e8'),
+    imageUrl: '',
     lat: 4.1755, lng: 73.5093,
   },
   {
@@ -125,7 +125,7 @@ const destinationData: DestSeed[] = [
     category: 'City Break',
     rating: 4.7, reviewCount: 3120,
     gradientStart: '#991B1B', gradientEnd: '#F59E0B',
-    imageUrl: unsplash('1539037111047-4b6793ca73a6'),
+    imageUrl: '',
     lat: 41.3874, lng: 2.1686,
   },
   {
@@ -134,7 +134,7 @@ const destinationData: DestSeed[] = [
     category: 'Adventure',
     rating: 4.8, reviewCount: 980,
     gradientStart: '#065F46', gradientEnd: '#34D399',
-    imageUrl: unsplash('1504702520181-bfc0c6919a7d'),
+    imageUrl: '',
     lat: -45.0312, lng: 168.6626,
   },
   {
@@ -143,7 +143,7 @@ const destinationData: DestSeed[] = [
     category: 'City Break',
     rating: 4.5, reviewCount: 2450,
     gradientStart: '#92400E', gradientEnd: '#F59E0B',
-    imageUrl: unsplash('1512453979798-1f96a2e2ef66'),
+    imageUrl: '',
     lat: 25.2048, lng: 55.2708,
   },
   {
@@ -152,7 +152,7 @@ const destinationData: DestSeed[] = [
     category: 'City Break',
     rating: 4.8, reviewCount: 4100,
     gradientStart: '#7C2D12', gradientEnd: '#DC2626',
-    imageUrl: unsplash('1552831388-096d383c6f0f'),
+    imageUrl: '',
     lat: 41.9028, lng: 12.4964,
   },
   {
@@ -161,7 +161,7 @@ const destinationData: DestSeed[] = [
     category: 'Beach',
     rating: 4.6, reviewCount: 1890,
     gradientStart: '#065F46', gradientEnd: '#F59E0B',
-    imageUrl: unsplash('1483729551029-6571801a20c9'),
+    imageUrl: '',
     lat: -22.9068, lng: -43.1729,
   },
   {
@@ -170,7 +170,7 @@ const destinationData: DestSeed[] = [
     category: 'City Break',
     rating: 4.6, reviewCount: 2870,
     gradientStart: '#EA580C', gradientEnd: '#F97316',
-    imageUrl: unsplash('1534353436294-9a6f047b67d0'),
+    imageUrl: '',
     lat: 52.3676, lng: 4.9041,
   },
   {
@@ -179,7 +179,7 @@ const destinationData: DestSeed[] = [
     category: 'Mountain',
     rating: 4.8, reviewCount: 1560,
     gradientStart: '#065F46', gradientEnd: '#06B6D4',
-    imageUrl: unsplash('1504702520181-bfc0c6919a7d'),
+    imageUrl: '',
     lat: 51.1784, lng: -115.5708,
   },
   {
@@ -188,7 +188,7 @@ const destinationData: DestSeed[] = [
     category: 'Beach',
     rating: 4.5, reviewCount: 2230,
     gradientStart: '#0E7490', gradientEnd: '#2DD4BF',
-    imageUrl: unsplash('1506665538329-4b35a8e3d224'),
+    imageUrl: '',
     lat: 7.8804, lng: 98.3923,
   },
   {
@@ -197,7 +197,7 @@ const destinationData: DestSeed[] = [
     category: 'City Break',
     rating: 4.7, reviewCount: 1980,
     gradientStart: '#7C2D12', gradientEnd: '#D97706',
-    imageUrl: unsplash('1524231757912-21f4c3c92bb5'),
+    imageUrl: '',
     lat: 41.0082, lng: 28.9784,
   },
   {
@@ -206,7 +206,7 @@ const destinationData: DestSeed[] = [
     category: 'Beach',
     rating: 4.6, reviewCount: 2760,
     gradientStart: '#1E40AF', gradientEnd: '#06B6D4',
-    imageUrl: unsplash('1506973035872-a4ec16b8e8d9'),
+    imageUrl: '',
     lat: -33.8688, lng: 151.2093,
   },
   {
@@ -215,7 +215,7 @@ const destinationData: DestSeed[] = [
     category: 'Adventure',
     rating: 4.7, reviewCount: 1340,
     gradientStart: '#1E293B', gradientEnd: '#22D3EE',
-    imageUrl: unsplash('1504893524553-b855bce3e6dd'),
+    imageUrl: '',
     lat: 64.1466, lng: -21.9426,
   },
   {
@@ -224,7 +224,7 @@ const destinationData: DestSeed[] = [
     category: 'Adventure',
     rating: 4.5, reviewCount: 1560,
     gradientStart: '#991B1B', gradientEnd: '#F97316',
-    imageUrl: unsplash('1551882549868-0c7f8a5ab511'),
+    imageUrl: '',
     lat: 30.5728, lng: 104.0668,
   },
   {
@@ -233,7 +233,7 @@ const destinationData: DestSeed[] = [
     category: 'Adventure',
     rating: 4.6, reviewCount: 1120,
     gradientStart: '#991B1B', gradientEnd: '#F59E0B',
-    imageUrl: unsplash('1489749798305-4fea3a7c2d47'),
+    imageUrl: '',
     lat: 31.6295, lng: -7.9811,
   },
 ];
