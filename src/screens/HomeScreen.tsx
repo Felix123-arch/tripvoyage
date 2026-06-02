@@ -103,6 +103,7 @@ export function HomeScreen({ navigation }: Props) {
                 rating={dest.rating}
                 reviewCount={dest.reviewCount}
                 gradient={[dest.gradientStart, dest.gradientEnd]}
+                imageUrl={dest.imageUrl}
                 onPress={() => {}}
               />
             ))}

@@ -10,6 +10,8 @@ export interface Destination {
   gradientStart: string;
   gradientEnd: string;
   imageUrl?: string | null;
+  lat: number;
+  lng: number;
 }
 
 export async function getDestinations(params?: {

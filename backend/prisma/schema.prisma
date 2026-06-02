@@ -52,6 +52,8 @@ model Destination {
   gradientStart String   @default("#BE185D")
   gradientEnd   String   @default("#EC4899")
   imageUrl      String?
+  lat           Float    @default(0)
+  lng           Float    @default(0)
   createdAt     DateTime @default(now())
 
   mapPins         MapPin[]
@@ -144,14 +146,15 @@ model Review {
 model MapPin {
   id            String  @id @default(uuid())
   name          String
-  positionTop   String
-  positionLeft  String
+  lat           Float    @default(0)
+  lng           Float    @default(0)
   color         String
   distance      String
   rating        Float   @default(0)
   reviewCount   Int     @default(0)
   description   String
   placeType     String
+  imageUrl      String?
   destinationId String?
 
   destination   Destination? @relation(fields: [destinationId], references: [id], onDelete: SetNull)
