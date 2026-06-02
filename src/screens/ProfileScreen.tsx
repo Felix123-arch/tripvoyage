@@ -1,32 +1,58 @@
-import { View, Text, ScrollView, TouchableOpacity, StyleSheet } from 'react-native';
+import { View, Text, ScrollView, StyleSheet, Alert } from 'react-native';
 import { useState } from 'react';
 import { LinearGradient } from 'expo-linear-gradient';
 import { useTheme } from '../theme';
 import { Tag, BudgetSelector, Toggle, Button } from '../components';
-import { mockUser, allPreferences } from '../data';
-import type { BudgetLevel } from '../data';
+import { useAuth } from '../contexts/AuthContext';
 
 interface Props {
   navigation: any;
 }
 
+const allPreferences = ['Adventure', 'Relaxation', 'Foodie', 'Culture', 'Nature', 'Shopping'];
+
 export function ProfileScreen({ navigation }: Props) {
   const t = useTheme();
-  const [user, setUser] = useState({ ...mockUser, preferences: [...mockUser.preferences] });
-  const [budget, setBudget] = useState<BudgetLevel>(mockUser.budgetLevel);
-  const [settings, setSettings] = useState({ ...mockUser.settings });
+  const { user, logout, updateProfile } = useAuth();
+
+  const [preferences, setPreferences] = useState<string[]>(
+    (user?.preferences || []).map((p: any) => typeof p === 'string' ? p : p.preference)
+  );
+  const [budget, setBudget] = useState<'$' | '$$' | '$$$'>((user?.budgetLevel as '$' | '$$' | '$$$') || '$$');
+  const [settings, setSettings] = useState({
+    language: user?.language || 'English',
+    currency: user?.currency || 'USD ($)',
+    flightAlerts: user?.flightAlerts ?? true,
+    itineraryReminders: user?.itineraryReminders ?? true,
+    darkMode: user?.darkMode ?? false,
+  });
 
   const togglePreference = (pref: string) => {
-    setUser((u) => ({
-      ...u,
-      preferences: u.preferences.includes(pref)
-        ? u.preferences.filter((p) => p !== pref)
-        : [...u.preferences, pref],
-    }));
+    const next = preferences.includes(pref)
+      ? preferences.filter((p) => p !== pref)
+      : [...preferences, pref];
+    setPreferences(next);
+    updateProfile({ preferences: next }).catch(() => {});
+  };
+
+  const handleBudgetChange = (b: '$' | '$$' | '$$$') => {
+    setBudget(b);
+    updateProfile({ budgetLevel: b }).catch(() => {});
   };
 
   const toggleSetting = (key: keyof typeof settings) => {
-    setSettings((s) => ({ ...s, [key]: !s[key] }));
+    setSettings((s) => {
+      const next = { ...s, [key]: !s[key] };
+      updateProfile({ [key]: next[key] }).catch(() => {});
+      return next;
+    });
+  };
+
+  const handleLogout = () => {
+    Alert.alert('Log Out', 'Are you sure you want to log out?', [
+      { text: 'Cancel', style: 'cancel' },
+      { text: 'Log Out', style: 'destructive', onPress: logout },
+    ]);
   };
 
   return (
@@ -37,7 +63,7 @@ export function ProfileScreen({ navigation }: Props) {
             Profile
           </Text>
           <View style={{ flex: 1 }} />
-          <Text style={[s.settingsIcon, { color: t.colors.onSurface, fontSize: 22 }]}>&#x2699;</Text>
+          <Text style={[s.settingsIcon, { color: t.colors.onSurface, fontSize: 22 }]}>{'⚙'}</Text>
         </View>
       </View>
 
@@ -47,13 +73,13 @@ export function ProfileScreen({ navigation }: Props) {
             colors={['#2563EB', '#7C3AED']}
             style={[s.avatar, { borderRadius: t.radius.full, width: 72, height: 72 }]}
           >
-            <Text style={s.avatarText}>{user.initials}</Text>
+            <Text style={s.avatarText}>{user?.initials || '?'}</Text>
           </LinearGradient>
           <Text style={[s.name, { fontFamily: t.typography.fontFamily, fontWeight: '600', fontSize: t.typography.title.fontSize, color: t.colors.onSurface }]}>
-            {user.displayName}
+            {user?.displayName || 'Guest'}
           </Text>
           <Text style={[s.email, { fontFamily: t.typography.fontFamily, fontSize: t.typography.bodySm.fontSize, color: t.colors.onSurfaceVariant }]}>
-            {user.email}
+            {user?.email || 'Not logged in'}
           </Text>
         </View>
 
@@ -62,12 +88,7 @@ export function ProfileScreen({ navigation }: Props) {
         </Text>
         <View style={[s.tagGrid, { paddingHorizontal: t.spacing.lg, marginTop: t.spacing.sm, gap: t.spacing.sm }]}>
           {allPreferences.map((pref) => (
-            <Tag
-              key={pref}
-              label={pref}
-              selected={user.preferences.includes(pref)}
-              onPress={() => togglePreference(pref)}
-            />
+            <Tag key={pref} label={pref} selected={preferences.includes(pref)} onPress={() => togglePreference(pref)} />
           ))}
         </View>
 
@@ -75,7 +96,7 @@ export function ProfileScreen({ navigation }: Props) {
           Budget Level
         </Text>
         <View style={{ paddingHorizontal: t.spacing.lg, marginTop: t.spacing.sm }}>
-          <BudgetSelector value={budget} onChange={setBudget} />
+          <BudgetSelector value={budget} onChange={handleBudgetChange} />
         </View>
 
         <Text style={[s.sectionTitle, { fontFamily: t.typography.fontFamily, fontWeight: '600', fontSize: t.typography.body.fontSize, color: t.colors.onSurface, paddingHorizontal: t.spacing.lg, marginTop: t.spacing['2xl'] }]}>
@@ -83,43 +104,33 @@ export function ProfileScreen({ navigation }: Props) {
         </Text>
         <View style={[s.settingsCard, { backgroundColor: t.colors.surface, borderColor: t.colors.outline, borderRadius: t.radius.md, borderWidth: 1, marginHorizontal: t.spacing.lg, marginTop: t.spacing.sm }]}>
           <View style={[s.settingRow, { borderBottomColor: t.colors.outlineVariant, padding: t.spacing.lg }]}>
-            <Text style={[s.settingLabel, { fontFamily: t.typography.fontFamily, fontSize: t.typography.body.fontSize, color: t.colors.onSurface }]}>
-              Language
-            </Text>
-            <Text style={[s.settingValue, { fontFamily: t.typography.fontFamily, fontSize: t.typography.body.fontSize, color: t.colors.onSurfaceVariant }]}>
-              {user.settings.language} &#x25BC;
-            </Text>
+            <Text style={[s.settingLabel, { fontFamily: t.typography.fontFamily, fontSize: t.typography.body.fontSize, color: t.colors.onSurface }]}>Language</Text>
+            <Text style={[s.settingValue, { fontFamily: t.typography.fontFamily, fontSize: t.typography.body.fontSize, color: t.colors.onSurfaceVariant }]}>{settings.language} {'▼'}</Text>
           </View>
           <View style={[s.settingRow, { borderBottomColor: t.colors.outlineVariant, padding: t.spacing.lg }]}>
-            <Text style={[s.settingLabel, { fontFamily: t.typography.fontFamily, fontSize: t.typography.body.fontSize, color: t.colors.onSurface }]}>
-              Currency
-            </Text>
-            <Text style={[s.settingValue, { fontFamily: t.typography.fontFamily, fontSize: t.typography.body.fontSize, color: t.colors.onSurfaceVariant }]}>
-              {user.settings.currency} &#x25BC;
-            </Text>
+            <Text style={[s.settingLabel, { fontFamily: t.typography.fontFamily, fontSize: t.typography.body.fontSize, color: t.colors.onSurface }]}>Currency</Text>
+            <Text style={[s.settingValue, { fontFamily: t.typography.fontFamily, fontSize: t.typography.body.fontSize, color: t.colors.onSurfaceVariant }]}>{settings.currency} {'▼'}</Text>
           </View>
           <View style={[s.settingRow, { borderBottomColor: t.colors.outlineVariant, padding: t.spacing.lg }]}>
-            <Text style={[s.settingLabel, { fontFamily: t.typography.fontFamily, fontSize: t.typography.body.fontSize, color: t.colors.onSurface }]}>
-              Flight Alerts
-            </Text>
+            <Text style={[s.settingLabel, { fontFamily: t.typography.fontFamily, fontSize: t.typography.body.fontSize, color: t.colors.onSurface }]}>Flight Alerts</Text>
             <Toggle value={settings.flightAlerts} onToggle={() => toggleSetting('flightAlerts')} />
           </View>
           <View style={[s.settingRow, { borderBottomColor: t.colors.outlineVariant, padding: t.spacing.lg }]}>
-            <Text style={[s.settingLabel, { fontFamily: t.typography.fontFamily, fontSize: t.typography.body.fontSize, color: t.colors.onSurface }]}>
-              Itinerary Reminders
-            </Text>
+            <Text style={[s.settingLabel, { fontFamily: t.typography.fontFamily, fontSize: t.typography.body.fontSize, color: t.colors.onSurface }]}>Itinerary Reminders</Text>
             <Toggle value={settings.itineraryReminders} onToggle={() => toggleSetting('itineraryReminders')} />
           </View>
           <View style={[s.settingRow, { padding: t.spacing.lg }]}>
-            <Text style={[s.settingLabel, { fontFamily: t.typography.fontFamily, fontSize: t.typography.body.fontSize, color: t.colors.onSurface }]}>
-              Dark Mode
-            </Text>
+            <Text style={[s.settingLabel, { fontFamily: t.typography.fontFamily, fontSize: t.typography.body.fontSize, color: t.colors.onSurface }]}>Dark Mode</Text>
             <Toggle value={settings.darkMode} onToggle={() => toggleSetting('darkMode')} />
           </View>
         </View>
 
-        <View style={{ paddingHorizontal: t.spacing.lg, marginTop: t.spacing['2xl'] }}>
-          <Button title="&#x1F6AA; Log Out" onPress={() => {}} variant="danger" block />
+        <View style={{ paddingHorizontal: t.spacing.lg, marginTop: t.spacing.lg }}>
+          <Button title={'📝 Take User Survey'} onPress={() => navigation.navigate('Questionnaire')} variant="secondary" block />
+        </View>
+
+        <View style={{ paddingHorizontal: t.spacing.lg, marginTop: t.spacing.lg }}>
+          <Button title={'🚪 Log Out'} onPress={handleLogout} variant="danger" block />
         </View>
 
         <View style={{ height: t.spacing['4xl'] }} />

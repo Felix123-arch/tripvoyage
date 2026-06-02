@@ -1,8 +1,9 @@
 import { View, Text, ScrollView, StyleSheet } from 'react-native';
+import { useState, useEffect, useCallback } from 'react';
 import { useTheme } from '../theme';
-import { WeatherCard, Timeline, Button } from '../components';
-import { mockItinerary } from '../data';
+import { WeatherCard, Timeline, Button, LoadingOverlay, ErrorBanner, EmptyState } from '../components';
 import { LinearGradient } from 'expo-linear-gradient';
+import * as api from '../services';
 
 interface Props {
   navigation: any;
@@ -10,23 +11,64 @@ interface Props {
 
 export function ItineraryScreen({ navigation }: Props) {
   const t = useTheme();
+  const [itinerary, setItinerary] = useState<api.Itinerary | null>(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+
+  const loadItinerary = useCallback(async () => {
+    setLoading(true);
+    setError(null);
+    try {
+      const list = await api.getItineraries('upcoming');
+      if (list.length > 0) {
+        setItinerary(list[0]);
+      }
+    } catch (err: any) {
+      setError(err.response?.data?.error || err.message || 'Failed to load itinerary');
+    } finally {
+      setLoading(false);
+    }
+  }, []);
+
+  useEffect(() => {
+    loadItinerary();
+  }, [loadItinerary]);
+
+  if (loading) return <LoadingOverlay message="Loading itinerary..." />;
+  if (error) return <ErrorBanner message={error} onRetry={loadItinerary} />;
+  if (!itinerary) return <EmptyState icon="📋" title="No Itinerary" message="Create your first trip itinerary to get started!" />;
+
+  const days = itinerary.days.map((day) => ({
+    dayNumber: day.dayNumber,
+    date: day.date,
+    activities: day.activities.map((a) => ({
+      id: a.id,
+      type: a.type as any,
+      title: a.title,
+      time: a.time || '',
+      location: a.location || '',
+      description: a.description || '',
+      status: (a.status as 'confirmed' | 'action_required' | 'pending') || 'confirmed',
+      badge: (a.badge as any) || undefined,
+    })),
+  }));
 
   return (
     <View style={[s.screen, { backgroundColor: t.colors.background }]}>
       <View style={[s.header, { backgroundColor: t.colors.surface, borderBottomColor: t.colors.outline, paddingHorizontal: t.spacing.lg, paddingTop: t.spacing['2xl'], paddingBottom: t.spacing.md }]}>
         <View style={s.headerRow}>
           <Text style={[s.back, { color: t.colors.primary, fontFamily: t.typography.fontFamily, fontSize: 28 }]} onPress={() => navigation.goBack()}>
-            &#x2190;
+            {'←'}
           </Text>
           <View style={s.headerCenter}>
             <Text style={[s.title, { fontFamily: t.typography.fontFamily, fontWeight: '600', fontSize: t.typography.bodyLg.fontSize, color: t.colors.onSurface }]}>
-              {mockItinerary.name}
+              {itinerary.name}
             </Text>
             <Text style={[s.subtitle, { fontFamily: t.typography.fontFamily, fontSize: t.typography.caption.fontSize, color: t.colors.onSurfaceVariant }]}>
-              {mockItinerary.startDate} - {mockItinerary.endDate}, {mockItinerary.year}
+              {itinerary.startDate} - {itinerary.endDate}, {itinerary.year}
             </Text>
           </View>
-          <Text style={[s.share, { color: t.colors.onSurface, fontSize: 22 }]}>&#x1F4E4;</Text>
+          <Text style={[s.share, { color: t.colors.onSurface, fontSize: 22 }]}>{'📤'}</Text>
         </View>
       </View>
 
@@ -38,16 +80,16 @@ export function ItineraryScreen({ navigation }: Props) {
             style={[s.weatherWrap, { borderRadius: t.radius.md, padding: t.spacing.lg }]}
           >
             <View style={s.weatherRow}>
-              <Text style={s.weatherIcon}>&#x2600;&#xFE0F;</Text>
+              <Text style={s.weatherIcon}>{'☀️'}</Text>
               <View>
                 <Text style={[s.weatherLoc, { fontFamily: t.typography.fontFamily, fontSize: t.typography.body.fontSize, color: 'rgba(255,255,255,0.9)' }]}>
-                  {mockItinerary.weather.location}
+                  {itinerary.destination}
                 </Text>
                 <Text style={[s.weatherTemp, { fontFamily: t.typography.fontFamily, fontWeight: '700', fontSize: 36, color: '#fff' }]}>
-                  {mockItinerary.weather.temperature}
+                  {itinerary.weatherTemp || '22'}°C
                 </Text>
                 <Text style={[s.weatherCond, { fontFamily: t.typography.fontFamily, fontSize: t.typography.bodySm.fontSize, color: 'rgba(255,255,255,0.85)' }]}>
-                  {mockItinerary.weather.condition} &middot; {mockItinerary.weather.description}
+                  {itinerary.weatherCond || 'Sunny'} · {itinerary.weatherDesc || 'Perfect for exploring'}
                 </Text>
               </View>
             </View>
@@ -55,7 +97,7 @@ export function ItineraryScreen({ navigation }: Props) {
         </View>
 
         <View style={{ paddingHorizontal: t.spacing.lg, marginTop: t.spacing.xl }}>
-          <Timeline days={mockItinerary.days} />
+          <Timeline days={days} />
         </View>
 
         <View style={[s.fabRow, { paddingHorizontal: t.spacing.lg, marginTop: t.spacing.xl, gap: t.spacing.sm }]}>

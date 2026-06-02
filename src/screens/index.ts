@@ -4,3 +4,6 @@ export { MapScreen } from './MapScreen';
 export { SavedScreen } from './SavedScreen';
 export { ProfileScreen } from './ProfileScreen';
 export { GuidesScreen } from './GuidesScreen';
+export { LoginScreen } from './LoginScreen';
+export { RegisterScreen } from './RegisterScreen';
+export { QuestionnaireScreen } from './QuestionnaireScreen';
