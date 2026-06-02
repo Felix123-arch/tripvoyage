@@ -25,7 +25,7 @@ export function Card({ name, description, rating, reviewCount, gradient, imageUr
       style={[s.card, { borderRadius: t.radius.md, backgroundColor: t.colors.surface, minWidth: 220, maxWidth: 260 }, t.elevation[1] as any]}
     >
       {(() => {
-        const url = getImageUrl(imageUrl, name);
+        const url = getImageUrl(imageUrl);
         if (url && !imgFailed) {
           return (
             <Image

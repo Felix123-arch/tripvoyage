@@ -146,7 +146,7 @@ export function DestinationDetailScreen({ navigation, route }: Props) {
       <ScrollView showsVerticalScrollIndicator={false}>
         {/* Hero Image */}
         {(() => {
-          const url = getImageUrl(destination.imageUrl, destination.name);
+          const url = getImageUrl(destination.imageUrl);
           if (url && !imgFailed) {
             return (
               <Image

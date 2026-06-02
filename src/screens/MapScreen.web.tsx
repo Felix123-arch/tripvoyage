@@ -69,15 +69,14 @@ export function MapScreen({ navigation }: Props) {
 
   useEffect(() => { loadPins(); }, [loadPins]);
 
-  // Get image for a pin: use pin's own image, destination's image, or fallback to picsum
+  // Get image for a pin: use pin's own image, or its destination's image (via proxy)
   const getPinImage = (pin: api.MapPinData): string | null => {
-    if (pin.imageUrl) return getImageUrl(pin.imageUrl, pin.name);
+    if (pin.imageUrl) return getImageUrl(pin.imageUrl);
     if (pin.destinationId) {
       const dest = destinations.find((d) => d.id === pin.destinationId);
-      if (dest?.imageUrl) return getImageUrl(dest.imageUrl, dest.name);
-      if (dest) return getImageUrl(null, dest.name);
+      if (dest?.imageUrl) return getImageUrl(dest.imageUrl);
     }
-    return getImageUrl(null, pin.name);
+    return null;
   };
 
   const handleAddToItinerary = async () => {
