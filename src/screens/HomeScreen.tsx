@@ -33,12 +33,23 @@ export function HomeScreen({ navigation }: Props) {
       if (activeCategory !== 'All') params.category = activeCategory;
       if (search.trim()) params.search = search.trim();
       let data = await api.getDestinations(params);
-      // Personalized ranking: boost destinations matching user preferences
+      // Personalized ranking: boost destinations matching user preferences + travel history
       const prefs = (user?.preferences || []).map((p: any) => typeof p === 'string' ? p.toLowerCase() : p.preference?.toLowerCase() || '');
-      if (prefs.length > 0) {
+      // Load past trips to learn favorite categories
+      let pastCategories: string[] = [];
+      try {
+        const pastTrips = await api.getItineraries('completed');
+        pastCategories = pastTrips.map((t) => t.destination).filter(Boolean);
+      } catch {}
+      // Combined scoring
+      const boostSet = new Set([
+        ...prefs,
+        ...pastCategories.map((c) => c.toLowerCase()),
+      ]);
+      if (boostSet.size > 0) {
         data = [...data].sort((a, b) => {
-          const aMatch = prefs.some((p: string) => a.category.toLowerCase().includes(p) || a.description.toLowerCase().includes(p)) ? 1 : 0;
-          const bMatch = prefs.some((p: string) => b.category.toLowerCase().includes(p) || b.description.toLowerCase().includes(p)) ? 1 : 0;
+          const aMatch = boostSet.has(a.category.toLowerCase()) || Array.from(boostSet).some((kw) => a.description.toLowerCase().includes(kw) || a.name.toLowerCase().includes(kw)) ? 1 : 0;
+          const bMatch = boostSet.has(b.category.toLowerCase()) || Array.from(boostSet).some((kw) => b.description.toLowerCase().includes(kw) || b.name.toLowerCase().includes(kw)) ? 1 : 0;
           if (aMatch !== bMatch) return bMatch - aMatch;
           return b.rating - a.rating;
         });
