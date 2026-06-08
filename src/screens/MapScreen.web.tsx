@@ -107,58 +107,70 @@ export function MapScreen({ navigation }: Props) {
     }
   };
 
-  // Show driving route from user's location to the pin
+  // Show route from user's location to the pin
   const showRoute = (pin: api.MapPinData | null) => {
     if (!pin || !mapInstance.current || !amapRef.current) return;
     const { AMap, map } = { AMap: amapRef.current, map: mapInstance.current };
-    setSelectedPin(null); // Close sheet
+    setSelectedPin(null);
 
-    // Clear previous routes
-    if ((map as any)._routeLayer) {
-      map.remove((map as any)._routeLayer);
+    // Clear previous route
+    if ((map as any)._routeLine) {
+      map.remove((map as any)._routeLine);
     }
 
-    const tryRoute = (start: [number, number]) => {
-      const end = [pin.lng, pin.lat] as [number, number];
-      AMap.plugin(['AMap.DrivingRoute', 'AMap.Marker', 'AMap.Polyline'], () => {
-        try {
-          const driving = new (AMap as any).DrivingRoute({
-            map: map,
-            autoFitView: true,
-            showTraffic: false,
-          });
-          (map as any)._routeLayer = driving;
-          driving.search(
-            new (AMap as any).LngLat(start[0], start[1]),
-            new (AMap as any).LngLat(end[0], end[1]),
-            (status: string, result: any) => {
-              if (status === 'complete') {
-                // Route drawn successfully
-              }
-            }
-          );
-        } catch {
-          // Fallback: draw a straight line
-          const line = new (AMap as any).Polyline({
-            path: [start, end],
-            strokeColor: '#2563EB',
-            strokeWeight: 4,
-            strokeOpacity: 0.8,
-          });
-          map.add(line);
-          map.setFitView();
-          (map as any)._routeLayer = line;
-        }
+    const drawLine = (start: [number, number]) => {
+      const end: [number, number] = [pin.lng, pin.lat];
+      // Draw dashed line
+      const line = new (AMap as any).Polyline({
+        path: [start, end],
+        strokeColor: '#2563EB',
+        strokeWeight: 4,
+        strokeOpacity: 0.8,
+        strokeStyle: 'dashed',
+        showDir: true,
       });
+      map.add(line);
+      (map as any)._routeLine = line;
+
+      // Add markers for start/end
+      const startMarker = new (AMap as any).Marker({
+        position: start,
+        content: '<div style="background:#2563EB;color:white;padding:4px 8px;border-radius:12px;font-size:12px;">📍 You</div>',
+        offset: new (AMap as any).Pixel(-20, -40),
+      });
+      const endMarker = new (AMap as any).Marker({
+        position: end,
+        content: `<div style="background:#DC2626;color:white;padding:4px 8px;border-radius:12px;font-size:12px;">🎯 ${pin.name}</div>`,
+        offset: new (AMap as any).Pixel(-20, -40),
+      });
+      map.add([startMarker, endMarker]);
+      (map as any)._routeMarkers = [startMarker, endMarker];
+      map.setFitView();
+
+      // Offer external navigation
+      setTimeout(() => {
+        const go = window.confirm('Open in map app for turn-by-turn navigation?');
+        if (go) {
+          window.open(
+            `https://uri.amap.com/navigation?to=${pin.lng},${pin.lat},${encodeURIComponent(pin.name)}&mode=car&callnative=1`,
+            '_blank'
+          );
+        }
+      }, 500);
     };
 
     if (navigator.geolocation) {
       navigator.geolocation.getCurrentPosition(
-        (pos) => tryRoute([pos.coords.longitude, pos.coords.latitude]),
+        (pos) => {
+          // Clear old markers
+          if ((map as any)._routeMarkers) {
+            (map as any)._routeMarkers.forEach((m: any) => map.remove(m));
+          }
+          drawLine([pos.coords.longitude, pos.coords.latitude]);
+        },
         () => {
-          // Geolocation denied — use map center as start
           const center = map.getCenter();
-          if (center) tryRoute([center.lng, center.lat]);
+          if (center) drawLine([center.lng, center.lat]);
         },
         { timeout: 5000 }
       );
