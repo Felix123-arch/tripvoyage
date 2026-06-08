@@ -62,6 +62,10 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     setState({ user: null, token: null, isLoading: false, isAuthenticated: false, isGuest: false });
     setAuthToken(null);
     storeToken(null);
+    // Redirect to login on web
+    if (typeof window !== 'undefined') {
+      window.location.reload();
+    }
   }, []);
 
   useEffect(() => {
