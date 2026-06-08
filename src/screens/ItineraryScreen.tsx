@@ -493,21 +493,34 @@ export function ItineraryScreen({ navigation, route }: Props) {
         <View style={{ paddingHorizontal: t.spacing.lg, marginTop: t.spacing.lg }}>
           <LinearGradient
             colors={(() => {
-              const temp = parseInt(itinerary.weatherTemp || '20');
-              if (temp >= 35) return ['#DC2626', '#EA580C'];
-              if (temp >= 30) return ['#EA580C', '#F59E0B'];
-              if (temp >= 25) return ['#F59E0B', '#84CC16'];
-              if (temp >= 20) return ['#10B981', '#06B6D4'];
-              if (temp >= 15) return ['#06B6D4', '#3B82F6'];
-              if (temp >= 10) return ['#3B82F6', '#6366F1'];
-              if (temp >= 5)  return ['#6366F1', '#8B5CF6'];
-              return ['#8B5CF6', '#A78BFA'];
-            })() as unknown as readonly [string, string]}
+              const temp = parseInt(weatherData[weatherIndex]?.temp || itinerary.weatherTemp || '20');
+              if (temp >= 35) return ['#DC2626', '#EA580C'] as const;
+              if (temp >= 30) return ['#EA580C', '#F59E0B'] as const;
+              if (temp >= 25) return ['#F59E0B', '#84CC16'] as const;
+              if (temp >= 20) return ['#10B981', '#06B6D4'] as const;
+              if (temp >= 15) return ['#06B6D4', '#3B82F6'] as const;
+              if (temp >= 10) return ['#3B82F6', '#6366F1'] as const;
+              if (temp >= 5)  return ['#6366F1', '#8B5CF6'] as const;
+              return ['#8B5CF6', '#A78BFA'] as const;
+            })()}
             start={{ x: 0, y: 0 }} end={{ x: 1, y: 1 }}
             style={[s.weatherWrap, { borderRadius: t.radius.md, padding: t.spacing.lg }]}
           >
             <View style={s.weatherRow}>
-              <Text style={s.weatherIcon}>{'☀️'}</Text>
+              <Text style={s.weatherIcon}>{(() => {
+                const cond = (weatherData[weatherIndex]?.cond || itinerary.weatherCond || '').toLowerCase();
+                if (cond.includes('rain') || cond.includes('drizzle') || cond.includes('shower')) return '🌧️';
+                if (cond.includes('snow') || cond.includes('ice') || cond.includes('sleet')) return '❄️';
+                if (cond.includes('cloud') || cond.includes('overcast')) return '⛅';
+                if (cond.includes('fog') || cond.includes('mist') || cond.includes('haze')) return '🌫️';
+                if (cond.includes('thunder') || cond.includes('storm')) return '⛈️';
+                if (cond.includes('clear') || cond.includes('sunny') || cond.includes('fair')) return '☀️';
+                const temp2 = parseInt(weatherData[weatherIndex]?.temp || '20');
+                if (temp2 >= 25) return '☀️';
+                if (temp2 >= 15) return '⛅';
+                if (temp2 >= 5)  return '🌤️';
+                return '❄️';
+              })()}</Text>
               <View>
                 <Text style={[s.weatherLoc, { fontFamily: t.typography.fontFamily, fontSize: t.typography.body.fontSize, color: 'rgba(255,255,255,0.9)' }]}>
                   {weatherData[weatherIndex]?.label || td(lang, itinerary.destination)?.name || itinerary.destination}
