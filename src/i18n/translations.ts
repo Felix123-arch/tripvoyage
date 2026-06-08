@@ -226,6 +226,10 @@ const translations: Record<Lang, Record<string, string>> = {
     notifications: '通知',
     noNotifications: '暂无新通知',
 
+    // Weather
+    sunny: '晴朗',
+    perfectForExploring: '适合出行',
+
     // Status
     completed: '已完成',
     upcoming: '即将开始',
@@ -439,6 +443,10 @@ const translations: Record<Lang, Record<string, string>> = {
     // Notifications
     notifications: 'Notifications',
     noNotifications: 'No new notifications',
+
+    // Weather
+    sunny: 'Sunny',
+    perfectForExploring: 'Perfect for exploring',
 
     // Status
     completed: 'Completed',

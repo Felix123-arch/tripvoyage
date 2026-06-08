@@ -3,6 +3,7 @@ import { useState, useEffect, useCallback } from 'react';
 import { useNavigation } from '@react-navigation/native';
 import { useTheme } from '../theme';
 import { useLang } from '../contexts/LanguageContext';
+import { td } from '../i18n/translations';
 import { Timeline, Button, LoadingOverlay, ErrorBanner, EmptyState } from '../components';
 import { LinearGradient } from 'expo-linear-gradient';
 import * as api from '../services';
@@ -22,7 +23,7 @@ const ACTIVITY_LABELS: Record<string, string> = {
 export function ItineraryScreen({ navigation, route }: Props) {
   const t = useTheme();
   const { isAuthenticated } = useAuth();
-  const { t: tx } = useLang();
+  const { t: tx, lang } = useLang();
   const [itineraries, setItineraries] = useState<api.Itinerary[]>([]);
   const [activeIndex, setActiveIndex] = useState(0);
   const [loading, setLoading] = useState(true);
@@ -114,7 +115,7 @@ export function ItineraryScreen({ navigation, route }: Props) {
 
   const handleAddActivity = async () => {
     if (!actTitle.trim()) {
-      setActivityError('Please enter an activity title.');
+      setActivityError(tx('fillAllFields'));
       return;
     }
     const itinerary = itineraries[activeIndex];
@@ -386,13 +387,13 @@ export function ItineraryScreen({ navigation, route }: Props) {
               <Text style={s.weatherIcon}>{'☀️'}</Text>
               <View>
                 <Text style={[s.weatherLoc, { fontFamily: t.typography.fontFamily, fontSize: t.typography.body.fontSize, color: 'rgba(255,255,255,0.9)' }]}>
-                  {itinerary.destination}
+                  {td(lang, itinerary.destination)?.name || itinerary.destination}
                 </Text>
                 <Text style={[s.weatherTemp, { fontFamily: t.typography.fontFamily, fontWeight: '700', fontSize: 36, color: '#fff' }]}>
                   {itinerary.weatherTemp || '22'}°C
                 </Text>
                 <Text style={[s.weatherCond, { fontFamily: t.typography.fontFamily, fontSize: t.typography.bodySm.fontSize, color: 'rgba(255,255,255,0.85)' }]}>
-                  {itinerary.weatherCond || 'Sunny'} · {itinerary.weatherDesc || 'Perfect for exploring'}
+                  {itinerary.weatherCond || tx('sunny')} · {itinerary.weatherDesc || tx('perfectForExploring')}
                 </Text>
               </View>
             </View>
