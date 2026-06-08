@@ -38,6 +38,14 @@ export function ItineraryScreen({ navigation, route }: Props) {
   const [creating, setCreating] = useState(false);
   const [createError, setCreateError] = useState<string | null>(null);
 
+  // Edit itinerary modal
+  const [showEdit, setShowEdit] = useState(false);
+  const [editName, setEditName] = useState('');
+  const [editStartDate, setEditStartDate] = useState('');
+  const [editEndDate, setEditEndDate] = useState('');
+  const [editing, setEditing] = useState(false);
+  const [editError, setEditError] = useState<string | null>(null);
+
   // Add activity modal
   const [showAddActivity, setShowAddActivity] = useState(false);
   const [actTitle, setActTitle] = useState('');
@@ -175,6 +183,38 @@ export function ItineraryScreen({ navigation, route }: Props) {
       setActivityError(err.response?.data?.error || 'Failed to add activity');
     } finally {
       setAddingActivity(false);
+    }
+  };
+
+  const handleOpenEdit = () => {
+    const it = itineraries[activeIndex];
+    if (!it) return;
+    setEditName(it.name);
+    setEditStartDate(it.startDate);
+    setEditEndDate(it.endDate);
+    setEditError(null);
+    setShowEdit(true);
+  };
+
+  const handleSaveEdit = async () => {
+    const it = itineraries[activeIndex];
+    if (!it || !editName.trim()) return;
+    setEditing(true);
+    setEditError(null);
+    try {
+      const updated = await api.updateItinerary(it.id, {
+        name: editName.trim(),
+        startDate: editStartDate,
+        endDate: editEndDate,
+      });
+      setItineraries((prev) =>
+        prev.map((x) => (x.id === it.id ? { ...x, ...updated } : x))
+      );
+      setShowEdit(false);
+    } catch (err: any) {
+      setEditError(err.response?.data?.error || tx('failedSave'));
+    } finally {
+      setEditing(false);
     }
   };
 
@@ -391,6 +431,9 @@ export function ItineraryScreen({ navigation, route }: Props) {
               {td(lang, itinerary.destination)?.name || itinerary.destination} · {itinerary.startDate} - {itinerary.endDate}
             </Text>
           </View>
+          <TouchableOpacity onPress={handleOpenEdit} style={{ marginRight: 12 }}>
+            <Text style={{ color: t.colors.primary, fontSize: 16, fontWeight: '600' }}>{tx('edit')}</Text>
+          </TouchableOpacity>
           <TouchableOpacity onPress={handleShare}>
             <Text style={[s.share, { color: t.colors.onSurface, fontSize: 22 }]}>{'📤'}</Text>
           </TouchableOpacity>
@@ -459,6 +502,39 @@ export function ItineraryScreen({ navigation, route }: Props) {
       {/* Create Itinerary Modal */}
       <Modal visible={showCreate} animationType="slide" transparent>
         {renderCreateModal()}
+      </Modal>
+
+      {/* Edit Itinerary Modal */}
+      <Modal visible={showEdit} animationType="slide" transparent>
+        <View style={[s.modalOverlay, { backgroundColor: 'rgba(0,0,0,0.5)' }]}>
+          <View style={[s.modalContent, { backgroundColor: t.colors.surface, borderRadius: t.radius.lg }]}>
+            <Text style={[s.modalTitle, { fontFamily: t.typography.fontFamily, fontWeight: '700', fontSize: 20, color: t.colors.onSurface }]}>
+              {tx('editItinerary')}
+            </Text>
+            <TextInput placeholder={tx('tripName')} value={editName} onChangeText={setEditName}
+              style={[s.input, { fontFamily: t.typography.fontFamily, borderColor: t.colors.outline, borderRadius: t.radius.sm, color: t.colors.onSurface }]}
+              placeholderTextColor={t.colors.onSurfaceMuted} />
+            <View style={s.dateRow}>
+              <TextInput placeholder={tx('startDate')} value={editStartDate} onChangeText={setEditStartDate}
+                style={[s.input, s.dateInput, { fontFamily: t.typography.fontFamily, borderColor: t.colors.outline, borderRadius: t.radius.sm, color: t.colors.onSurface }]}
+                placeholderTextColor={t.colors.onSurfaceMuted} />
+              <TextInput placeholder={tx('endDate')} value={editEndDate} onChangeText={setEditEndDate}
+                style={[s.input, s.dateInput, { fontFamily: t.typography.fontFamily, borderColor: t.colors.outline, borderRadius: t.radius.sm, color: t.colors.onSurface }]}
+                placeholderTextColor={t.colors.onSurfaceMuted} />
+            </View>
+            {editError && <Text style={{ color: t.colors.error, fontSize: 13, marginBottom: 8 }}>{editError}</Text>}
+            <View style={s.modalBtns}>
+              <TouchableOpacity onPress={() => setShowEdit(false)}
+                style={[s.modalBtn, { borderColor: t.colors.outline, borderRadius: t.radius.sm, borderWidth: 1 }]}>
+                <Text style={{ color: t.colors.onSurface, fontWeight: '500' }}>{tx('cancel')}</Text>
+              </TouchableOpacity>
+              <TouchableOpacity onPress={handleSaveEdit} disabled={editing}
+                style={[s.modalBtn, { backgroundColor: t.colors.primary, borderRadius: t.radius.sm }]}>
+                <Text style={{ color: '#FFF', fontWeight: '600' }}>{editing ? tx('saving') : tx('save')}</Text>
+              </TouchableOpacity>
+            </View>
+          </View>
+        </View>
       </Modal>
 
       {/* Add Activity Modal */}
