@@ -111,48 +111,56 @@ export function MapScreen({ navigation }: Props) {
   const showRoute = (pin: api.MapPinData | null) => {
     if (!pin || !mapInstance.current || !amapRef.current) return;
     const { AMap, map } = { AMap: amapRef.current, map: mapInstance.current };
+    setSelectedPin(null); // Close sheet
 
     // Clear previous routes
-    if ((map as any)._driving) { (map as any)._driving.clear(); }
+    if ((map as any)._routeLayer) {
+      map.remove((map as any)._routeLayer);
+    }
 
-    // Try geolocation
+    const tryRoute = (start: [number, number]) => {
+      const end = [pin.lng, pin.lat] as [number, number];
+      AMap.plugin(['AMap.DrivingRoute', 'AMap.Marker', 'AMap.Polyline'], () => {
+        try {
+          const driving = new (AMap as any).DrivingRoute({
+            map: map,
+            autoFitView: true,
+            showTraffic: false,
+          });
+          (map as any)._routeLayer = driving;
+          driving.search(
+            new (AMap as any).LngLat(start[0], start[1]),
+            new (AMap as any).LngLat(end[0], end[1]),
+            (status: string, result: any) => {
+              if (status === 'complete') {
+                // Route drawn successfully
+              }
+            }
+          );
+        } catch {
+          // Fallback: draw a straight line
+          const line = new (AMap as any).Polyline({
+            path: [start, end],
+            strokeColor: '#2563EB',
+            strokeWeight: 4,
+            strokeOpacity: 0.8,
+          });
+          map.add(line);
+          map.setFitView();
+          (map as any)._routeLayer = line;
+        }
+      });
+    };
+
     if (navigator.geolocation) {
       navigator.geolocation.getCurrentPosition(
-        (pos) => {
-          const start = [pos.coords.longitude, pos.coords.latitude];
-          const end = [pin.lng, pin.lat];
-
-          AMap.plugin('AMap.DrivingRoute', () => {
-            const driving = new AMap.DrivingRoute({
-              map: map,
-              panel: undefined as any,
-              autoFitView: true,
-            } as any);
-            (map as any)._driving = driving;
-            driving.search(start as any, end as any, (status: string, result: any) => {
-              if (status === 'complete') {
-                setSelectedPin(null); // Close sheet to show route
-              } else {
-                alert('Route search failed');
-              }
-            });
-          });
-        },
+        (pos) => tryRoute([pos.coords.longitude, pos.coords.latitude]),
         () => {
-          // Geolocation denied — just show a line
+          // Geolocation denied — use map center as start
           const center = map.getCenter();
-          AMap.plugin('AMap.Polyline', () => {
-            const line = new AMap.Polyline({
-              path: [[center.lng, center.lat], [pin.lng, pin.lat]],
-              strokeColor: '#2563EB',
-              strokeWeight: 4,
-              strokeStyle: 'dashed',
-            });
-            map.add(line);
-            map.setFitView();
-            setSelectedPin(null);
-          });
-        }
+          if (center) tryRoute([center.lng, center.lat]);
+        },
+        { timeout: 5000 }
       );
     }
   };
