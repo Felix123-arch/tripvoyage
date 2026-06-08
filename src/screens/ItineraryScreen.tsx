@@ -182,23 +182,21 @@ export function ItineraryScreen({ navigation, route }: Props) {
   const handleDelete = () => {
     const it = itineraries[activeIndex];
     if (!it) return;
-    Alert.alert(
-      tx('deleteItinerary'),
-      tx('deleteConfirm'),
-      [
-        { text: tx('cancel'), style: 'cancel' },
-        { text: tx('delete'), style: 'destructive', onPress: async () => {
-          try {
-            await api.deleteItinerary(it.id);
-            const remaining = itineraries.filter((x) => x.id !== it.id);
-            setItineraries(remaining);
-            setActiveIndex(0);
-          } catch (err: any) {
-            Alert.alert(tx('error'), err.response?.data?.error || err.message || tx('failedSave'));
-          }
-        }},
-      ]
-    );
+    if (Platform.OS === 'web') {
+      if (!window.confirm(tx('deleteConfirm'))) return;
+    }
+    api.deleteItinerary(it.id)
+      .then(() => {
+        setItineraries((prev) => prev.filter((x) => x.id !== it.id));
+        setActiveIndex(0);
+      })
+      .catch((err: any) => {
+        if (Platform.OS === 'web') {
+          window.alert(err.response?.data?.error || tx('failedSave'));
+        } else {
+          Alert.alert(tx('error'), err.response?.data?.error || err.message || tx('failedSave'));
+        }
+      });
   };
 
   const handleBookTransport = () => {
