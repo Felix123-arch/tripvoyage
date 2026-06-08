@@ -1,5 +1,6 @@
 import { View, Text, StyleSheet } from 'react-native';
 import { useTheme } from '../theme';
+import { useLang } from '../contexts/LanguageContext';
 import { EventCard } from './EventCard';
 import type { Day } from '../data';
 
@@ -9,6 +10,7 @@ interface Props {
 
 export function Timeline({ days }: Props) {
   const t = useTheme();
+  const { t: tx } = useLang();
 
   return (
     <View>
@@ -17,7 +19,7 @@ export function Timeline({ days }: Props) {
           <View style={s.dayHeader}>
             <View style={[s.dot, { backgroundColor: t.colors.primary, width: 12, height: 12, borderRadius: 6 }]} />
             <Text style={[s.dayLabel, { fontFamily: t.typography.fontFamily, fontWeight: '600', fontSize: t.typography.body.fontSize, color: t.colors.onSurface, marginLeft: t.spacing.lg }]}>
-              Day {day.dayNumber}
+              {tx('day')} {day.dayNumber}
             </Text>
             <Text style={[s.date, { fontFamily: t.typography.fontFamily, fontSize: t.typography.bodySm.fontSize, color: t.colors.onSurfaceVariant, marginLeft: t.spacing.md }]}>
               {day.date}
