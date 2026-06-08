@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { View, Text, TextInput, StyleSheet, TouchableOpacity, KeyboardAvoidingView, Platform, Alert } from 'react-native';
 import { useAuth } from '../contexts/AuthContext';
+import { useLang } from '../contexts/LanguageContext';
 import { useTheme } from '../theme';
 
 interface Props {
@@ -10,21 +11,22 @@ interface Props {
 export function LoginScreen({ navigation }: Props) {
   const theme = useTheme();
   const { login, skipLogin } = useAuth();
+  const { t: tx } = useLang();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [loading, setLoading] = useState(false);
 
   const handleLogin = async () => {
     if (!email.trim() || !password.trim()) {
-      Alert.alert('Error', 'Please enter both email and password');
+      Alert.alert(tx('error'), tx('emailPasswordRequired'));
       return;
     }
     setLoading(true);
     try {
       await login(email.trim(), password);
     } catch (err: any) {
-      const msg = err.response?.data?.error || err.message || 'Login failed';
-      Alert.alert('Login Error', msg);
+      const msg = err.response?.data?.error || err.message || tx('loginFailed');
+      Alert.alert(tx('loginError'), msg);
     } finally {
       setLoading(false);
     }
@@ -38,13 +40,13 @@ export function LoginScreen({ navigation }: Props) {
       <View style={styles.content}>
         <Text style={[styles.logo, { color: theme.colors.primary }]}>TripVoyage</Text>
         <Text style={[styles.tagline, { color: theme.colors.onSurfaceVariant }]}>
-          Your personal travel companion
+          {tx('tagline')}
         </Text>
 
         <View style={styles.form}>
           <TextInput
             style={[styles.input, { backgroundColor: theme.colors.surface, borderColor: theme.colors.outline, color: theme.colors.onSurface }]}
-            placeholder="Email"
+            placeholder={tx('email')}
             placeholderTextColor={theme.colors.onSurfaceMuted}
             value={email}
             onChangeText={setEmail}
@@ -54,7 +56,7 @@ export function LoginScreen({ navigation }: Props) {
           />
           <TextInput
             style={[styles.input, { backgroundColor: theme.colors.surface, borderColor: theme.colors.outline, color: theme.colors.onSurface }]}
-            placeholder="Password"
+            placeholder={tx('password')}
             placeholderTextColor={theme.colors.onSurfaceMuted}
             value={password}
             onChangeText={setPassword}
@@ -67,18 +69,18 @@ export function LoginScreen({ navigation }: Props) {
             disabled={loading}
             activeOpacity={0.8}
           >
-            <Text style={styles.buttonText}>{loading ? 'Logging in...' : 'Log In'}</Text>
+            <Text style={styles.buttonText}>{loading ? tx('loggingIn') : tx('logIn')}</Text>
           </TouchableOpacity>
 
           <TouchableOpacity
             style={[styles.linkBtn, { borderColor: theme.colors.outline, borderRadius: theme.radius.md }]}
             onPress={() => navigation.navigate('Register')}
           >
-            <Text style={[styles.linkText, { color: theme.colors.primary }]}>Create an account</Text>
+            <Text style={[styles.linkText, { color: theme.colors.primary }]}>{tx('createAccount')}</Text>
           </TouchableOpacity>
 
           <TouchableOpacity onPress={skipLogin} style={styles.skipBtn}>
-            <Text style={[styles.skipText, { color: theme.colors.onSurfaceMuted }]}>Continue as guest</Text>
+            <Text style={[styles.skipText, { color: theme.colors.onSurfaceMuted }]}>{tx('continueGuest')}</Text>
           </TouchableOpacity>
         </View>
       </View>

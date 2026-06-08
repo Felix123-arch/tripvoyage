@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { View, Text, TextInput, StyleSheet, TouchableOpacity, KeyboardAvoidingView, Platform, Alert } from 'react-native';
 import { useAuth } from '../contexts/AuthContext';
+import { useLang } from '../contexts/LanguageContext';
 import { useTheme } from '../theme';
 
 interface Props {
@@ -10,6 +11,7 @@ interface Props {
 export function RegisterScreen({ navigation }: Props) {
   const theme = useTheme();
   const { register, skipLogin } = useAuth();
+  const { t: tx } = useLang();
   const [displayName, setDisplayName] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
@@ -18,23 +20,23 @@ export function RegisterScreen({ navigation }: Props) {
 
   const handleRegister = async () => {
     if (!displayName.trim() || !email.trim() || !password) {
-      Alert.alert('Error', 'Please fill in all fields');
+      Alert.alert(tx('error'), tx('fillAllFields'));
       return;
     }
     if (password !== confirm) {
-      Alert.alert('Error', 'Passwords do not match');
+      Alert.alert(tx('error'), tx('passwordsMismatch'));
       return;
     }
     if (password.length < 8) {
-      Alert.alert('Error', 'Password must be at least 8 characters');
+      Alert.alert(tx('error'), tx('passwordMinLength'));
       return;
     }
     setLoading(true);
     try {
       await register({ email: email.trim(), password, displayName: displayName.trim() });
     } catch (err: any) {
-      const msg = err.response?.data?.error || err.message || 'Registration failed';
-      Alert.alert('Registration Error', msg);
+      const msg = err.response?.data?.error || err.message || tx('registerFailed');
+      Alert.alert(tx('error'), msg);
     } finally {
       setLoading(false);
     }
@@ -47,12 +49,12 @@ export function RegisterScreen({ navigation }: Props) {
     >
       <View style={styles.content}>
         <Text style={[styles.logo, { color: theme.colors.primary }]}>TripVoyage</Text>
-        <Text style={[styles.tagline, { color: theme.colors.onSurfaceVariant }]}>Create your account</Text>
+        <Text style={[styles.tagline, { color: theme.colors.onSurfaceVariant }]}>{tx('registerTagline')}</Text>
 
         <View style={styles.form}>
           <TextInput
             style={[styles.input, { backgroundColor: theme.colors.surface, borderColor: theme.colors.outline, color: theme.colors.onSurface }]}
-            placeholder="Full Name"
+            placeholder={tx('displayName')}
             placeholderTextColor={theme.colors.onSurfaceMuted}
             value={displayName}
             onChangeText={setDisplayName}
@@ -60,7 +62,7 @@ export function RegisterScreen({ navigation }: Props) {
           />
           <TextInput
             style={[styles.input, { backgroundColor: theme.colors.surface, borderColor: theme.colors.outline, color: theme.colors.onSurface }]}
-            placeholder="Email"
+            placeholder={tx('email')}
             placeholderTextColor={theme.colors.onSurfaceMuted}
             value={email}
             onChangeText={setEmail}
@@ -70,7 +72,7 @@ export function RegisterScreen({ navigation }: Props) {
           />
           <TextInput
             style={[styles.input, { backgroundColor: theme.colors.surface, borderColor: theme.colors.outline, color: theme.colors.onSurface }]}
-            placeholder="Password (min 8 characters)"
+            placeholder={tx('password') + ' (' + tx('passwordMinLength') + ')'}
             placeholderTextColor={theme.colors.onSurfaceMuted}
             value={password}
             onChangeText={setPassword}
@@ -78,7 +80,7 @@ export function RegisterScreen({ navigation }: Props) {
           />
           <TextInput
             style={[styles.input, { backgroundColor: theme.colors.surface, borderColor: theme.colors.outline, color: theme.colors.onSurface }]}
-            placeholder="Confirm Password"
+            placeholder={tx('confirmPassword')}
             placeholderTextColor={theme.colors.onSurfaceMuted}
             value={confirm}
             onChangeText={setConfirm}
@@ -91,18 +93,18 @@ export function RegisterScreen({ navigation }: Props) {
             disabled={loading}
             activeOpacity={0.8}
           >
-            <Text style={styles.buttonText}>{loading ? 'Creating account...' : 'Create Account'}</Text>
+            <Text style={styles.buttonText}>{loading ? tx('registering') : tx('createAccount')}</Text>
           </TouchableOpacity>
 
           <TouchableOpacity
             style={[styles.linkBtn, { borderColor: theme.colors.outline, borderRadius: theme.radius.md }]}
             onPress={() => navigation.goBack()}
           >
-            <Text style={[styles.linkText, { color: theme.colors.primary }]}>Already have an account? Log in</Text>
+            <Text style={[styles.linkText, { color: theme.colors.primary }]}>{tx('alreadyAccount')}</Text>
           </TouchableOpacity>
 
           <TouchableOpacity onPress={skipLogin} style={styles.skipBtn}>
-            <Text style={[styles.skipText, { color: theme.colors.onSurfaceMuted }]}>Continue as guest</Text>
+            <Text style={[styles.skipText, { color: theme.colors.onSurfaceMuted }]}>{tx('continueGuest')}</Text>
           </TouchableOpacity>
         </View>
       </View>

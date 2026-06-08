@@ -31,7 +31,7 @@ export function HomeScreen({ navigation }: Props) {
       const data = await api.getDestinations(params);
       setDestinations(data);
     } catch (err: any) {
-      setError(err.response?.data?.error || err.message || 'Failed to load destinations');
+      setError(err.response?.data?.error || err.message || tx('failedLoadDest'));
     } finally {
       setLoading(false);
     }
@@ -88,11 +88,11 @@ export function HomeScreen({ navigation }: Props) {
         </Text>
 
         {loading ? (
-          <LoadingOverlay message="Loading destinations..." />
+          <LoadingOverlay message={tx('loadingDestinations')} />
         ) : error ? (
           <ErrorBanner message={error} onRetry={loadDestinations} />
         ) : destinations.length === 0 ? (
-          <EmptyState icon="🔍" message="No destinations found. Try a different search or category." />
+          <EmptyState icon="🔍" message={tx('noDestinations')} />
         ) : (
           <ScrollView
             horizontal
