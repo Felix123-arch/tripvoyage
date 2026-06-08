@@ -36,15 +36,28 @@ export function HomeScreen({ navigation }: Props) {
       // Personalized ranking: boost destinations matching user preferences + travel history
       const prefs = (user?.preferences || []).map((p: any) => typeof p === 'string' ? p.toLowerCase() : p.preference?.toLowerCase() || '');
       // Load past trips to learn favorite categories
-      let pastCategories: string[] = [];
+      let pastCategoryBoost: string[] = [];
       try {
         const pastTrips = await api.getItineraries('completed');
-        pastCategories = pastTrips.map((t) => t.destination).filter(Boolean);
+        pastCategoryBoost = pastTrips.map((t) => t.destination).filter(Boolean);
       } catch {}
-      // Combined scoring
+      // Combined scoring: preferences + past trip categories
       const boostSet = new Set([
         ...prefs,
-        ...pastCategories.map((c) => c.toLowerCase()),
+        ...pastCategoryBoost.flatMap((d) => {
+          // Match past destination names to categories
+          const catMap: Record<string, string[]> = {
+            'Bali': ['Beach', 'Nature'], 'Phuket': ['Beach', 'Nature'],
+            'Tokyo': ['City Break', 'Adventure'], 'New York': ['City Break', 'Shopping'],
+            'Paris': ['City Break', 'Culture'], 'Rome': ['City Break', 'Culture'],
+            'Swiss Alps': ['Mountain', 'Adventure'], 'Banff': ['Mountain', 'Nature'],
+            'Beijing': ['City Break', 'Culture'], 'Shanghai': ['City Break', 'Shopping'],
+          };
+          for (const [key, cats] of Object.entries(catMap)) {
+            if (d.toLowerCase().includes(key.toLowerCase())) return cats;
+          }
+          return [];
+        }).map((c) => c.toLowerCase()),
       ]);
       if (boostSet.size > 0) {
         data = [...data].sort((a, b) => {

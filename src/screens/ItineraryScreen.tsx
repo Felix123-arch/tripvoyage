@@ -550,6 +550,20 @@ export function ItineraryScreen({ navigation, route }: Props) {
             style={[s.newTripBtn, { borderColor: t.colors.outline, borderRadius: t.radius.md, borderWidth: 1, marginTop: t.spacing.md }]}>
             <Text style={{ color: t.colors.primary, fontWeight: '600', fontSize: 14, textAlign: 'center' }}>{tx('anotherTrip')}</Text>
           </TouchableOpacity>
+          <TouchableOpacity onPress={async () => {
+            const it = itineraries[activeIndex];
+            if (!it) return;
+            if (window.confirm(tx('completeConfirm'))) {
+              try {
+                await api.updateItinerary(it.id, { status: 'completed' });
+                setItineraries((prev) => prev.filter((x) => x.id !== it.id));
+                setActiveIndex(0);
+              } catch { Alert.alert(tx('error'), tx('failedSave')); }
+            }
+          }}
+            style={[s.newTripBtn, { borderColor: t.colors.secondary, borderRadius: t.radius.md, borderWidth: 1, marginTop: t.spacing.sm }]}>
+            <Text style={{ color: t.colors.secondary, fontWeight: '600', fontSize: 14, textAlign: 'center' }}>{tx('markComplete')}</Text>
+          </TouchableOpacity>
           <TouchableOpacity onPress={handleDelete}
             style={[s.newTripBtn, { borderColor: t.colors.error, borderRadius: t.radius.md, borderWidth: 1, marginTop: t.spacing.sm }]}>
             <Text style={{ color: t.colors.error, fontWeight: '600', fontSize: 14, textAlign: 'center' }}>{tx('deleteItinerary')}</Text>
