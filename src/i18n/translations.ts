@@ -222,6 +222,10 @@ const translations: Record<Lang, Record<string, string>> = {
     failedSave: '保存失败',
     couldNotSave: '无法保存修改，请重试。',
 
+    // Status
+    completed: '已完成',
+    upcoming: '即将开始',
+
     // Misc
     adventure: '探险',
     relaxation: '放松',
@@ -427,6 +431,10 @@ const translations: Record<Lang, Record<string, string>> = {
     failedLoadGuides: 'Failed to load guides',
     failedSave: 'Update Failed',
     couldNotSave: 'Could not save changes. Please try again.',
+
+    // Status
+    completed: 'Completed',
+    upcoming: 'Upcoming',
 
     // Misc
     adventure: 'Adventure',

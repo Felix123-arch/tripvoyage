@@ -3,6 +3,7 @@ import { useState, useEffect, useCallback } from 'react';
 import { LinearGradient } from 'expo-linear-gradient';
 import { useTheme } from '../theme';
 import { useLang } from '../contexts/LanguageContext';
+import { td } from '../i18n/translations';
 import { SegmentControl, GalleryGrid, Badge, LoadingOverlay, ErrorBanner, EmptyState } from '../components';
 import { useAuth } from '../contexts/AuthContext';
 import * as api from '../services';
@@ -11,13 +12,14 @@ interface Props {
   navigation: any;
 }
 
-const YEARS = ['All Years', '2026', '2025', '2024', '2023', '2022'];
-const REGIONS = ['All Regions', 'Asia', 'Europe', 'North America', 'South America', 'Oceania', 'Africa'];
+const YEARS = ['allYears', '2026', '2025', '2024', '2023', '2022'];
+const REGIONS = ['allRegions', 'asia', 'europe', 'northAmerica', 'southAmerica', 'oceania', 'africa'];
+const REGION_API_VALUES = ['All Regions', 'Asia', 'Europe', 'North America', 'South America', 'Oceania', 'Africa'];
 
 export function SavedScreen({ navigation }: Props) {
   const t = useTheme();
   const { isAuthenticated } = useAuth();
-  const { t: tx } = useLang();
+  const { t: tx, lang } = useLang();
   const [tab, setTab] = useState(0);
   const [pastTrips, setPastTrips] = useState<api.Itinerary[]>([]);
   const [savedDestinations, setSavedDestinations] = useState<api.SavedDestination[]>([]);
@@ -25,9 +27,9 @@ export function SavedScreen({ navigation }: Props) {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
-  // Filters
-  const [yearFilter, setYearFilter] = useState('All Years');
-  const [regionFilter, setRegionFilter] = useState('All Regions');
+  // Filters (use translation keys)
+  const [yearFilter, setYearFilter] = useState('allYears');
+  const [regionFilter, setRegionFilter] = useState('allRegions');
   const [showYearPicker, setShowYearPicker] = useState(false);
   const [showRegionPicker, setShowRegionPicker] = useState(false);
 
@@ -78,10 +80,10 @@ export function SavedScreen({ navigation }: Props) {
   };
 
   // Filter trips by year and region
+  const regionApiValue = REGION_API_VALUES[REGIONS.indexOf(regionFilter)] || 'All Regions';
   const filteredTrips = pastTrips.filter((trip) => {
-    if (yearFilter !== 'All Years' && String(trip.year) !== yearFilter) return false;
-    if (regionFilter !== 'All Regions') {
-      // Simple region mapping by destination name
+    if (yearFilter !== 'allYears' && String(trip.year) !== yearFilter) return false;
+    if (regionApiValue !== 'All Regions') {
       const regionMap: Record<string, string[]> = {
         'Asia': ['Tokyo', 'Kyoto', 'Beijing', 'Shanghai', 'Bali', 'Phuket', 'Istanbul', 'Chengdu', 'Dubai', 'Maldives'],
         'Europe': ['Paris', 'Santorini', 'Barcelona', 'Rome', 'Amsterdam', 'Swiss Alps', 'Reykjavik'],
@@ -90,7 +92,7 @@ export function SavedScreen({ navigation }: Props) {
         'Oceania': ['Sydney', 'Queenstown'],
         'Africa': ['Marrakech'],
       };
-      const regionDestinations = regionMap[regionFilter] || [];
+      const regionDestinations = regionMap[regionApiValue] || [];
       if (!regionDestinations.some((d) => trip.destination.includes(d))) return false;
     }
     return true;
@@ -131,13 +133,13 @@ export function SavedScreen({ navigation }: Props) {
                   style={[s.filterBtn, { backgroundColor: t.colors.surface, borderColor: t.colors.outline, borderRadius: t.radius.sm, paddingHorizontal: t.spacing.md, paddingVertical: t.spacing.sm }]}
                   onPress={() => { setShowYearPicker(true); setShowRegionPicker(false); }}
                 >
-                  <Text style={{ fontSize: t.typography.label.fontSize, color: t.colors.onSurface }}>{yearFilter} {'▼'}</Text>
+                  <Text style={{ fontSize: t.typography.label.fontSize, color: t.colors.onSurface }}>{tx(yearFilter)} {'▼'}</Text>
                 </TouchableOpacity>
                 <TouchableOpacity
                   style={[s.filterBtn, { backgroundColor: t.colors.surface, borderColor: t.colors.outline, borderRadius: t.radius.sm, paddingHorizontal: t.spacing.md, paddingVertical: t.spacing.sm }]}
                   onPress={() => { setShowRegionPicker(true); setShowYearPicker(false); }}
                 >
-                  <Text style={{ fontSize: t.typography.label.fontSize, color: t.colors.onSurface }}>{regionFilter} {'▼'}</Text>
+                  <Text style={{ fontSize: t.typography.label.fontSize, color: t.colors.onSurface }}>{tx(regionFilter)} {'▼'}</Text>
                 </TouchableOpacity>
               </View>
 
@@ -160,13 +162,13 @@ export function SavedScreen({ navigation }: Props) {
                       </LinearGradient>
                       <View style={[s.tripInfo, { marginLeft: t.spacing.md }]}>
                         <Text style={{ fontWeight: '600', fontSize: t.typography.body.fontSize, color: t.colors.onSurface }}>
-                          {trip.destination}
+                          {td(lang, trip.destination)?.name || trip.destination}
                         </Text>
                         <Text style={{ fontSize: t.typography.bodySm.fontSize, color: t.colors.onSurfaceVariant }}>
                           {trip.startDate} - {trip.endDate}
                         </Text>
                       </View>
-                      <Badge variant={trip.status === 'completed' ? 'success' : 'info'} label={trip.status} />
+                      <Badge variant={trip.status === 'completed' ? 'success' : 'info'} label={tx(trip.status)} />
                     </TouchableOpacity>
                   ))}
                 </View>
@@ -276,7 +278,7 @@ export function SavedScreen({ navigation }: Props) {
               <TouchableOpacity key={y} onPress={() => { setYearFilter(y); setShowYearPicker(false); }}
                 style={{ paddingVertical: 12, borderBottomWidth: 1, borderBottomColor: t.colors.outline }}>
                 <Text style={{ color: yearFilter === y ? t.colors.primary : t.colors.onSurface, fontWeight: yearFilter === y ? '700' : '400', fontSize: 15, textAlign: 'center' }}>
-                  {y}
+                  {tx(y)}
                 </Text>
               </TouchableOpacity>
             ))}
@@ -293,7 +295,7 @@ export function SavedScreen({ navigation }: Props) {
               <TouchableOpacity key={r} onPress={() => { setRegionFilter(r); setShowRegionPicker(false); }}
                 style={{ paddingVertical: 12, borderBottomWidth: 1, borderBottomColor: t.colors.outline }}>
                 <Text style={{ color: regionFilter === r ? t.colors.primary : t.colors.onSurface, fontWeight: regionFilter === r ? '700' : '400', fontSize: 15, textAlign: 'center' }}>
-                  {r}
+                  {tx(r)}
                 </Text>
               </TouchableOpacity>
             ))}
