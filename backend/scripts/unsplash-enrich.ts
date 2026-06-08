@@ -27,7 +27,7 @@ const images: Record<string, string> = {
   'Istanbul, Turkey':       'https://images.unsplash.com/photo-1527838832700-5059252407fa?w=800',
   'Sydney, Australia':      'https://images.unsplash.com/photo-1506973035872-a4ec16b8e8d9?w=800',
   'Reykjavik, Iceland':     'https://images.unsplash.com/photo-1504829857797-ddff29c27927?w=800',
-  'Chengdu, China':         'https://images.unsplash.com/photo-1563911302283-d2bc129e7570?w=800',
+  'Chengdu, China':         'https://images.unsplash.com/photo-1525382455947-f319bc05fb35?w=800',
   'Marrakech, Morocco':     'https://images.unsplash.com/photo-1597212618440-806262de4f6b?w=800',
 };
 
