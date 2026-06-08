@@ -119,7 +119,7 @@ export async function updateItinerary(id: string, userId: string, data: Partial<
       destination: data.destination,
       startDate: data.startDate,
       endDate: data.endDate,
-      status: data.status,
+      status: (data as any).status,
       weatherTemp: data.weatherTemp,
       weatherCond: data.weatherCond,
       weatherDesc: data.weatherDesc,
