@@ -55,6 +55,24 @@ export async function getItineraryById(id: string, userId: string) {
 }
 
 export async function createItinerary(userId: string, data: z.infer<typeof createItinerarySchema>) {
+  // Auto-generate days from date range if not provided
+  let daysToCreate = data.days;
+  if (!daysToCreate || daysToCreate.length === 0) {
+    const start = new Date(data.startDate);
+    const end = new Date(data.endDate);
+    const dayCount = Math.max(1, Math.ceil((end.getTime() - start.getTime()) / (1000 * 60 * 60 * 24)) + 1);
+    daysToCreate = [];
+    for (let i = 0; i < dayCount; i++) {
+      const d = new Date(start);
+      d.setDate(d.getDate() + i);
+      daysToCreate.push({
+        dayNumber: i + 1,
+        date: d.toISOString().split('T')[0],
+        activities: undefined,
+      });
+    }
+  }
+
   return prisma.itinerary.create({
     data: {
       userId,
@@ -67,12 +85,12 @@ export async function createItinerary(userId: string, data: z.infer<typeof creat
       weatherTemp: data.weatherTemp,
       weatherCond: data.weatherCond,
       weatherDesc: data.weatherDesc,
-      days: data.days ? {
-        create: data.days.map((day) => ({
+      days: {
+        create: daysToCreate.map((day: any) => ({
           dayNumber: day.dayNumber,
           date: day.date,
           activities: day.activities ? {
-            create: day.activities.map((a) => ({
+            create: day.activities.map((a: any) => ({
               title: a.title,
               description: a.description,
               time: a.time,
@@ -83,7 +101,7 @@ export async function createItinerary(userId: string, data: z.infer<typeof creat
             })),
           } : undefined,
         })),
-      } : undefined,
+      },
     },
     include: { days: { include: { activities: true } } },
   });
