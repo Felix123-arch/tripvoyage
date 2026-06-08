@@ -19,17 +19,25 @@ export function LoginScreen({ navigation }: Props) {
   const [code, setCode] = useState('');
   const [codeSent, setCodeSent] = useState(false);
   const [loading, setLoading] = useState(false);
+  const [loginError, setLoginError] = useState('');
+  const [fieldErrors, setFieldErrors] = useState<{email?: string; password?: string; phone?: string; code?: string}>({});
 
   const handleEmailLogin = async () => {
-    if (!email.trim() || !password.trim()) {
-      Alert.alert(tx('error'), tx('emailPasswordRequired'));
+    const errors: any = {};
+    if (!email.trim()) errors.email = tx('fieldRequired');
+    if (!password.trim()) errors.password = tx('fieldRequired');
+    if (Object.keys(errors).length > 0) {
+      setFieldErrors(errors);
       return;
     }
+    setFieldErrors({});
+    setLoginError('');
     setLoading(true);
     try {
       await login(email.trim(), password);
     } catch (err: any) {
-      Alert.alert(tx('loginError'), err.response?.data?.error || err.message || tx('loginFailed'));
+      const msg = err.response?.data?.error || err.message || tx('loginFailed');
+      setLoginError(msg === 'Invalid credentials' ? tx('wrongCredentials') : msg);
     } finally {
       setLoading(false);
     }
@@ -46,25 +54,25 @@ export function LoginScreen({ navigation }: Props) {
   };
 
   const handlePhoneLogin = async () => {
-    if (!phone.trim() || !code.trim()) {
-      Alert.alert(tx('error'), tx('phoneCodeRequired'));
+    const errors: any = {};
+    if (!phone.trim() || phone.length < 10) errors.phone = tx('phoneRequired');
+    if (!code.trim()) errors.code = tx('fieldRequired');
+    if (code.length !== 6) errors.code = tx('invalidCode');
+    if (Object.keys(errors).length > 0) {
+      setFieldErrors(errors);
       return;
     }
-    // Mock: any 6-digit code works
-    if (code.length !== 6) {
-      Alert.alert(tx('error'), tx('invalidCode'));
-      return;
-    }
+    setFieldErrors({});
+    setLoginError('');
     setLoading(true);
     try {
-      // Login with phone as pseudo-email, auto-register if not exists
       try {
         await login(`${phone.trim()}@phone.tripvoyage.app`, 'phone-user');
       } catch {
         try {
           await register({ email: `${phone.trim()}@phone.tripvoyage.app`, password: 'phone-user', displayName: `User ${phone.slice(-4)}` });
         } catch {
-          Alert.alert(tx('error'), tx('loginFailed'));
+          setLoginError(tx('loginFailed'));
         }
       }
     } finally {
@@ -96,20 +104,49 @@ export function LoginScreen({ navigation }: Props) {
         </View>
 
         <View style={styles.form}>
+          {loginError ? (
+            <View style={[styles.errorBanner, { backgroundColor: theme.colors.errorContainer, borderRadius: theme.radius.sm }]}>
+              <Text style={{ color: theme.colors.error, fontSize: 13, textAlign: 'center' }}>{loginError}</Text>
+            </View>
+          ) : null}
           {tab === 'email' ? (
             <>
-              <TextInput style={[styles.input, { backgroundColor: theme.colors.surface, borderColor: theme.colors.outline, color: theme.colors.onSurface }]} placeholder={tx('email')} placeholderTextColor={theme.colors.onSurfaceMuted} value={email} onChangeText={setEmail} keyboardType="email-address" autoCapitalize="none" />
-              <TextInput style={[styles.input, { backgroundColor: theme.colors.surface, borderColor: theme.colors.outline, color: theme.colors.onSurface }]} placeholder={tx('password')} placeholderTextColor={theme.colors.onSurfaceMuted} value={password} onChangeText={setPassword} secureTextEntry />
+              <TextInput
+                style={[styles.input, { backgroundColor: theme.colors.surface, borderColor: fieldErrors.email ? theme.colors.error : theme.colors.outline, color: theme.colors.onSurface }]}
+                placeholder={tx('email')} placeholderTextColor={theme.colors.onSurfaceMuted}
+                value={email} onChangeText={(v) => { setEmail(v); setFieldErrors({}); setLoginError(''); }}
+                keyboardType="email-address" autoCapitalize="none"
+              />
+              {fieldErrors.email ? <Text style={{ color: theme.colors.error, fontSize: 12, marginTop: -8 }}>{fieldErrors.email}</Text> : null}
+              <TextInput
+                style={[styles.input, { backgroundColor: theme.colors.surface, borderColor: fieldErrors.password ? theme.colors.error : theme.colors.outline, color: theme.colors.onSurface }]}
+                placeholder={tx('password')} placeholderTextColor={theme.colors.onSurfaceMuted}
+                value={password} onChangeText={(v) => { setPassword(v); setFieldErrors({}); setLoginError(''); }}
+                secureTextEntry
+              />
+              {fieldErrors.password ? <Text style={{ color: theme.colors.error, fontSize: 12, marginTop: -8 }}>{fieldErrors.password}</Text> : null}
             </>
           ) : (
             <>
-              <TextInput style={[styles.input, { backgroundColor: theme.colors.surface, borderColor: theme.colors.outline, color: theme.colors.onSurface }]} placeholder={tx('phonePlaceholder')} placeholderTextColor={theme.colors.onSurfaceMuted} value={phone} onChangeText={setPhone} keyboardType="phone-pad" />
+              <TextInput
+                style={[styles.input, { backgroundColor: theme.colors.surface, borderColor: fieldErrors.phone ? theme.colors.error : theme.colors.outline, color: theme.colors.onSurface }]}
+                placeholder={tx('phonePlaceholder')} placeholderTextColor={theme.colors.onSurfaceMuted}
+                value={phone} onChangeText={(v) => { setPhone(v); setFieldErrors({}); setLoginError(''); }}
+                keyboardType="phone-pad"
+              />
+              {fieldErrors.phone ? <Text style={{ color: theme.colors.error, fontSize: 12, marginTop: -8 }}>{fieldErrors.phone}</Text> : null}
               <View style={{ flexDirection: 'row', gap: 8 }}>
-                <TextInput style={[styles.input, { flex: 1, backgroundColor: theme.colors.surface, borderColor: theme.colors.outline, color: theme.colors.onSurface }]} placeholder={tx('verifyCode')} placeholderTextColor={theme.colors.onSurfaceMuted} value={code} onChangeText={setCode} keyboardType="number-pad" maxLength={6} />
+                <TextInput
+                  style={[styles.input, { flex: 1, backgroundColor: theme.colors.surface, borderColor: fieldErrors.code ? theme.colors.error : theme.colors.outline, color: theme.colors.onSurface }]}
+                  placeholder={tx('verifyCode')} placeholderTextColor={theme.colors.onSurfaceMuted}
+                  value={code} onChangeText={(v) => { setCode(v); setFieldErrors({}); setLoginError(''); }}
+                  keyboardType="number-pad" maxLength={6}
+                />
                 <TouchableOpacity style={[styles.codeBtn, { backgroundColor: codeSent ? theme.colors.onSurfaceMuted : theme.colors.primary, borderRadius: theme.radius.md }]} onPress={handleSendCode} disabled={codeSent}>
                   <Text style={{ color: '#FFF', fontWeight: '600', fontSize: 13 }}>{codeSent ? tx('codeResend') : tx('sendCode')}</Text>
                 </TouchableOpacity>
               </View>
+              {fieldErrors.code ? <Text style={{ color: theme.colors.error, fontSize: 12, marginTop: -8 }}>{fieldErrors.code}</Text> : null}
             </>
           )}
 
@@ -161,6 +198,7 @@ const styles = StyleSheet.create({
   socialRow: { flexDirection: 'row', justifyContent: 'center', gap: 12 },
   socialBtnWide: { flex: 1, height: 44, borderRadius: 22, justifyContent: 'center', alignItems: 'center' },
   socialBtn: { width: 48, height: 48, borderRadius: 24, justifyContent: 'center', alignItems: 'center' },
+  errorBanner: { padding: 10, marginBottom: 4 },
   skipBtn: { alignItems: 'center', paddingVertical: 12 },
   skipText: { fontSize: 14 },
 });
