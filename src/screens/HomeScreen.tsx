@@ -9,7 +9,8 @@ interface Props {
   navigation: any;
 }
 
-const allCategories = ['All', 'Beach', 'Mountain', 'City Break', 'Family', 'Adventure', 'Relaxation'];
+const CAT_KEYS = ['allCat', 'beach', 'mountain', 'cityBreak', 'family', 'adventure', 'relaxation'] as const;
+const CAT_VALUES = ['All', 'Beach', 'Mountain', 'City Break', 'Family', 'Adventure', 'Relaxation'];
 
 export function HomeScreen({ navigation }: Props) {
   const t = useTheme();
@@ -78,8 +79,8 @@ export function HomeScreen({ navigation }: Props) {
           showsHorizontalScrollIndicator={false}
           contentContainerStyle={{ paddingHorizontal: t.spacing.lg, marginTop: t.spacing.lg, gap: t.spacing.sm }}
         >
-          {allCategories.map((cat) => (
-            <Chip key={cat} label={cat} active={activeCategory === cat} onPress={() => setActiveCategory(cat)} />
+          {CAT_KEYS.map((key, i) => (
+            <Chip key={key} label={tx(key)} active={activeCategory === CAT_VALUES[i]} onPress={() => setActiveCategory(CAT_VALUES[i])} />
           ))}
         </ScrollView>
 

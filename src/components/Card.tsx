@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { TouchableOpacity, View, Text, Image, StyleSheet } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 import { useTheme } from '../theme';
+import { useLang } from '../contexts/LanguageContext';
 import { getImageUrl } from '../utils/imageProxy';
 
 interface Props {
@@ -16,6 +17,7 @@ interface Props {
 
 export function Card({ name, description, rating, reviewCount, gradient, imageUrl, onPress }: Props) {
   const t = useTheme();
+  const { t: tx } = useLang();
   const [imgFailed, setImgFailed] = useState(false);
 
   return (
@@ -58,7 +60,7 @@ export function Card({ name, description, rating, reviewCount, gradient, imageUr
             {rating.toFixed(1)}
           </Text>
           <Text style={[s.reviewCount, { fontFamily: t.typography.fontFamily, fontSize: t.typography.caption.fontSize, color: t.colors.onSurfaceMuted }]}>
-            ({reviewCount.toLocaleString()} reviews)
+            ({reviewCount.toLocaleString()} {tx('reviews')})
           </Text>
         </View>
       </View>
