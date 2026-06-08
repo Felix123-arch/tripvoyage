@@ -92,13 +92,14 @@ export function ItineraryScreen({ navigation, route }: Props) {
   useEffect(() => {
     if (route?.params?.addDestination) {
       const dest = route.params.addDestination as api.Destination;
-      setNewDestination(dest.name);
-      setNewName(`Trip to ${dest.name}`);
+      const dName = td(lang, dest.name)?.name || dest.name;
+      setNewDestination(dName);
+      setNewName(`${tx('tripTo')} ${dName}`);
       setShowCreate(true);
       // Clear the param so it doesn't trigger again
       route.params.addDestination = undefined;
     }
-  }, [route?.params?.addDestination]);
+  }, [route?.params?.addDestination, lang]);
 
   const handleCreate = async () => {
     if (!newName.trim() || !newDestination.trim() || !newStartDate || !newEndDate) {
@@ -189,12 +190,11 @@ export function ItineraryScreen({ navigation, route }: Props) {
         { text: tx('delete'), style: 'destructive', onPress: async () => {
           try {
             await api.deleteItinerary(it.id);
-            setItineraries((prev) => prev.filter((x) => x.id !== it.id));
-            if (activeIndex >= itineraries.length - 1 && activeIndex > 0) {
-              setActiveIndex(activeIndex - 1);
-            }
+            const remaining = itineraries.filter((x) => x.id !== it.id);
+            setItineraries(remaining);
+            setActiveIndex(0);
           } catch (err: any) {
-            Alert.alert(tx('error'), err.response?.data?.error || tx('failedSave'));
+            Alert.alert(tx('error'), err.response?.data?.error || err.message || tx('failedSave'));
           }
         }},
       ]
