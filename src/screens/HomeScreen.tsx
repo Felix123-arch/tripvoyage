@@ -1,4 +1,4 @@
-import { View, Text, ScrollView, StyleSheet } from 'react-native';
+import { View, Text, ScrollView, StyleSheet, TouchableOpacity, Alert } from 'react-native';
 import { useState, useEffect, useCallback } from 'react';
 import { useTheme } from '../theme';
 import { useLang } from '../contexts/LanguageContext';
@@ -66,7 +66,9 @@ export function HomeScreen({ navigation }: Props) {
             TripVoyage
           </Text>
           <View style={{ flex: 1 }} />
-          <Text style={[s.bell, { color: t.colors.onSurface }]}>{'🔔'}</Text>
+          <TouchableOpacity onPress={() => Alert.alert(tx('notifications'), tx('noNotifications'))}>
+            <Text style={[s.bell, { color: t.colors.onSurface }]}>{'🔔'}</Text>
+          </TouchableOpacity>
         </View>
       </View>
 

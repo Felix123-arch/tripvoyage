@@ -222,6 +222,10 @@ const translations: Record<Lang, Record<string, string>> = {
     failedSave: '保存失败',
     couldNotSave: '无法保存修改，请重试。',
 
+    // Notifications
+    notifications: '通知',
+    noNotifications: '暂无新通知',
+
     // Status
     completed: '已完成',
     upcoming: '即将开始',
@@ -431,6 +435,10 @@ const translations: Record<Lang, Record<string, string>> = {
     failedLoadGuides: 'Failed to load guides',
     failedSave: 'Update Failed',
     couldNotSave: 'Could not save changes. Please try again.',
+
+    // Notifications
+    notifications: 'Notifications',
+    noNotifications: 'No new notifications',
 
     // Status
     completed: 'Completed',
