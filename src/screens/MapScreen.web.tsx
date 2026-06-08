@@ -85,7 +85,7 @@ export function MapScreen({ navigation }: Props) {
 
   const handleAddToItinerary = async () => {
     if (!isAuthenticated) {
-      Alert.alert('Login Required', 'Please log in to add destinations to your itinerary.');
+      Alert.alert(tx('loginRequired'), tx('loginToSave'));
       return;
     }
     if (!selectedPin) return;
@@ -93,16 +93,14 @@ export function MapScreen({ navigation }: Props) {
     try {
       const list = await api.getItineraries('upcoming');
       if (list.length === 0) {
-        Alert.alert('No Itinerary', 'Create an itinerary first from the Itinerary tab.', [
-          { text: 'OK' },
-          { text: 'Go to Itinerary', onPress: () => navigation.navigate('Main', { screen: 'Itinerary' }) },
-        ]);
+        const go = window.confirm(tx('noItineraryMsg') + '\n\n' + tx('goItineraryQ'));
+        if (go) navigation.navigate('Main', { screen: 'Itinerary' });
         return;
       }
       setItineraries(list);
       setShowItineraryModal(true);
     } catch (err: any) {
-      Alert.alert('Error', 'Failed to load itineraries.');
+      Alert.alert(tx('error'), tx('failedLoad'));
     } finally {
       setAddingToItinerary(false);
     }
