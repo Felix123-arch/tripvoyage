@@ -35,10 +35,11 @@ const pinColors: Record<string, string> = {
   blue: '#2563EB', green: '#059669', amber: '#D97706', red: '#DC2626',
 };
 
-export function MapScreen({ navigation }: Props) {
+export function MapScreen({ navigation, route }: Props) {
   const t = useTheme();
   const { isAuthenticated } = useAuth();
   const { t: tx, lang } = useLang();
+  const itineraryRoutes = route?.params?.itineraryRoutes;
   const [mapLoaded, setMapLoaded] = useState(false);
   const [loadError, setLoadError] = useState<string | null>(null);
   const [pins, setPins] = useState<api.MapPinData[]>([]);
@@ -72,6 +73,62 @@ export function MapScreen({ navigation }: Props) {
   }, []);
 
   useEffect(() => { loadPins(); }, [loadPins]);
+
+  // Draw itinerary routes on map
+  useEffect(() => {
+    if (!mapLoaded || !amapRef.current || !mapInstance.current || !itineraryRoutes) return;
+    const { AMap, map } = { AMap: amapRef.current, map: mapInstance.current };
+    const route = itineraryRoutes;
+
+    // Collect all pins that match itinerary activities
+    const routePinNames = new Set<string>();
+    route.days?.forEach((day: any) => {
+      day.activities?.forEach((act: any) => {
+        if (act.location) routePinNames.add(act.location);
+      });
+    });
+
+    // Find matching pins by location/name
+    const routePins = pins.filter((p) =>
+      routePinNames.has(p.name) || Array.from(routePinNames).some((n) => p.name.includes(n) || n.includes(p.name))
+    );
+
+    if (routePins.length < 2) return;
+
+    // Center map on first pin
+    map.setCenter([routePins[0].lng, routePins[0].lat]);
+    map.setZoom(5);
+
+    // Draw colored lines between consecutive pins
+    const colors = ['#2563EB', '#059669', '#D97706', '#DC2626', '#7C3AED', '#0891B2'];
+    const path = routePins.map((p) => [p.lng, p.lat]);
+    const line = new (AMap as any).Polyline({
+      path,
+      strokeColor: '#2563EB',
+      strokeWeight: 3,
+      strokeOpacity: 0.7,
+      strokeStyle: 'solid',
+      showDir: true,
+    });
+    map.add(line);
+    (map as any)._routeLine = line;
+
+    // Add numbered markers
+    routePins.forEach((p, i) => {
+      const el = document.createElement('div');
+      el.innerHTML = `<div style="background:#2563EB;color:white;width:24px;height:24px;border-radius:12px;display:flex;align-items:center;justify-content:center;font-weight:bold;font-size:12px;border:2px solid white;box-shadow:0 2px 6px rgba(0,0,0,0.3);">${i + 1}</div>`;
+      const marker = new (AMap as any).Marker({
+        position: [p.lng, p.lat],
+        content: el.firstChild,
+        offset: new (AMap as any).Pixel(-12, -12),
+      });
+      marker.on('click', () => setSelectedPin(p));
+      map.add(marker);
+      markersRef.current.push(marker);
+    });
+
+    map.setFitView(null, false, [60, 60, 60, 60]);
+  }, [mapLoaded, itineraryRoutes, pins]);
   useEffect(() => { setImgFailed(false); }, [selectedPin]); // Reset on new pin
 
   // Get image for a pin: use pin's own image, or fall back to destination image
@@ -415,7 +472,7 @@ export function MapScreen({ navigation }: Props) {
   );
 }
 
-interface Props { navigation: any; }
+interface Props { navigation: any; route?: any; }
 
 const s = StyleSheet.create({
   screen: { flex: 1 },

@@ -434,6 +434,9 @@ export function ItineraryScreen({ navigation, route }: Props) {
           <TouchableOpacity onPress={handleOpenEdit} style={{ marginRight: 12 }}>
             <Text style={{ color: t.colors.primary, fontSize: 16, fontWeight: '600' }}>{tx('edit')}</Text>
           </TouchableOpacity>
+          <TouchableOpacity onPress={() => navigation.navigate('Main', { screen: 'Map', params: { itineraryRoutes: itinerary } })} style={{ marginRight: 12 }}>
+            <Text style={{ color: t.colors.secondary, fontSize: 16, fontWeight: '600' }}>🗺</Text>
+          </TouchableOpacity>
           <TouchableOpacity onPress={handleShare}>
             <Text style={[s.share, { color: t.colors.onSurface, fontSize: 22 }]}>{'📤'}</Text>
           </TouchableOpacity>
