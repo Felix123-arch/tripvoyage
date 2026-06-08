@@ -1,6 +1,7 @@
 import { View, Text, ScrollView, StyleSheet, TouchableOpacity, Modal, TextInput, Alert, Platform } from 'react-native';
 import { useState, useEffect, useCallback } from 'react';
 import { useTheme } from '../theme';
+import { useLang } from '../contexts/LanguageContext';
 import { Timeline, Button, LoadingOverlay, ErrorBanner, EmptyState } from '../components';
 import { LinearGradient } from 'expo-linear-gradient';
 import * as api from '../services';
@@ -20,6 +21,7 @@ const ACTIVITY_LABELS: Record<string, string> = {
 export function ItineraryScreen({ navigation, route }: Props) {
   const t = useTheme();
   const { isAuthenticated } = useAuth();
+  const { t: tx } = useLang();
   const [itineraries, setItineraries] = useState<api.Itinerary[]>([]);
   const [activeIndex, setActiveIndex] = useState(0);
   const [loading, setLoading] = useState(true);
@@ -191,11 +193,11 @@ export function ItineraryScreen({ navigation, route }: Props) {
 
   if (!isAuthenticated) {
     return (
-      <EmptyState icon="🔒" title="Login Required" message="Please log in to view and manage your itineraries." />
+      <EmptyState icon="🔒" title={tx('loginTitle')} message={tx('loginToView')} />
     );
   }
 
-  if (loading) return <LoadingOverlay message="Loading itinerary..." />;
+  if (loading) return <LoadingOverlay message={tx('loadingItinerary')} />;
   if (error) return <ErrorBanner message={error} onRetry={loadItineraries} />;
 
   if (itineraries.length === 0 && !showCreate) {
@@ -203,12 +205,12 @@ export function ItineraryScreen({ navigation, route }: Props) {
       <View style={[s.screen, { backgroundColor: t.colors.background }]}>
         <View style={[s.header, { backgroundColor: t.colors.surface, borderBottomColor: t.colors.outline, paddingHorizontal: t.spacing.lg, paddingTop: t.spacing['2xl'], paddingBottom: t.spacing.md }]}>
           <Text style={[s.title, { fontFamily: t.typography.fontFamily, fontWeight: '600', fontSize: t.typography.bodyLg.fontSize, color: t.colors.onSurface }]}>
-            My Itineraries
+            {tx('myItineraries')}
           </Text>
         </View>
-        <EmptyState icon="📋" title="No Trips Yet" message="Create your first trip itinerary to get started!" />
+        <EmptyState icon="📋" title={tx('noTripsYet')} message={tx('createFirstTrip')} />
         <View style={{ paddingHorizontal: 40, marginBottom: 40 }}>
-          <Button title="+ Create New Itinerary" onPress={() => setShowCreate(true)} block />
+          <Button title={tx('newTrip')} onPress={() => setShowCreate(true)} block />
         </View>
         {/* Create Modal rendered here too */}
         <Modal visible={showCreate} animationType="slide" transparent>

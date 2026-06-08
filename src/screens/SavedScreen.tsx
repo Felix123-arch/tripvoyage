@@ -2,6 +2,7 @@ import { View, Text, ScrollView, TouchableOpacity, StyleSheet, Alert, Modal } fr
 import { useState, useEffect, useCallback } from 'react';
 import { LinearGradient } from 'expo-linear-gradient';
 import { useTheme } from '../theme';
+import { useLang } from '../contexts/LanguageContext';
 import { SegmentControl, GalleryGrid, Badge, LoadingOverlay, ErrorBanner, EmptyState } from '../components';
 import { useAuth } from '../contexts/AuthContext';
 import * as api from '../services';
@@ -16,6 +17,7 @@ const REGIONS = ['All Regions', 'Asia', 'Europe', 'North America', 'South Americ
 export function SavedScreen({ navigation }: Props) {
   const t = useTheme();
   const { isAuthenticated } = useAuth();
+  const { t: tx } = useLang();
   const [tab, setTab] = useState(0);
   const [pastTrips, setPastTrips] = useState<api.Itinerary[]>([]);
   const [savedDestinations, setSavedDestinations] = useState<api.SavedDestination[]>([]);
@@ -105,26 +107,26 @@ export function SavedScreen({ navigation }: Props) {
       <View style={[s.header, { backgroundColor: t.colors.surface, borderBottomColor: t.colors.outline, paddingHorizontal: t.spacing.lg, paddingTop: t.spacing['2xl'], paddingBottom: t.spacing.md }]}>
         <View style={s.headerRow}>
           <Text style={[s.title, { fontFamily: t.typography.fontFamily, fontWeight: '600', fontSize: t.typography.bodyLg.fontSize, color: t.colors.onSurface }]}>
-            My Travels
+            {tx('myTravels')}
           </Text>
         </View>
       </View>
 
       {loading ? (
-        <LoadingOverlay message="Loading your travels..." />
+        <LoadingOverlay message={tx('loadingTravels')} />
       ) : error ? (
         <ErrorBanner message={error} onRetry={loadAll} />
       ) : (
         <ScrollView style={s.scroll} showsVerticalScrollIndicator={false}>
           <View style={{ paddingHorizontal: t.spacing.lg, marginTop: t.spacing.lg }}>
-            <SegmentControl options={['Past Trips', 'Saved', 'Wishlist']} activeIndex={tab} onChange={setTab} />
+            <SegmentControl options={[tx('pastTrips'), tx('saved'), tx('wishlist')]} activeIndex={tab} onChange={setTab} />
           </View>
 
           {/* Tab 0: Past Trips */}
           {tab === 0 && (
             <>
               <View style={[s.filterRow, { paddingHorizontal: t.spacing.lg, marginTop: t.spacing.lg, gap: t.spacing.sm }]}>
-                <Text style={[s.filterLabel, { fontSize: t.typography.bodySm.fontSize, color: t.colors.onSurfaceVariant }]}>Filter:</Text>
+                <Text style={[s.filterLabel, { fontSize: t.typography.bodySm.fontSize, color: t.colors.onSurfaceVariant }]}>{tx('filter')}</Text>
                 <TouchableOpacity
                   style={[s.filterBtn, { backgroundColor: t.colors.surface, borderColor: t.colors.outline, borderRadius: t.radius.sm, paddingHorizontal: t.spacing.md, paddingVertical: t.spacing.sm }]}
                   onPress={() => { setShowYearPicker(true); setShowRegionPicker(false); }}
@@ -140,7 +142,7 @@ export function SavedScreen({ navigation }: Props) {
               </View>
 
               {filteredTrips.length === 0 ? (
-                <EmptyState icon="✈️" message="No past trips found with these filters." />
+                <EmptyState icon="✈️" message={tx('noPastTripsFilter')} />
               ) : (
                 <View style={{ paddingHorizontal: t.spacing.lg, marginTop: t.spacing.md, gap: t.spacing.md }}>
                   {filteredTrips.map((trip) => (
@@ -173,11 +175,11 @@ export function SavedScreen({ navigation }: Props) {
               {memoryItems.length > 0 && (
                 <>
                   <Text style={[s.sectionTitle, { fontWeight: '600', fontSize: t.typography.headline.fontSize, color: t.colors.onSurface, marginTop: t.spacing['2xl'], paddingHorizontal: t.spacing.lg }]}>
-                    Memory Gallery
+                    {tx('memoryGallery')}
                   </Text>
                   <TouchableOpacity>
                     <Text style={{ fontSize: t.typography.bodySm.fontSize, color: t.colors.primary, paddingHorizontal: t.spacing.lg, marginTop: 2 }}>
-                      View All
+                      {tx('viewAll')}
                     </Text>
                   </TouchableOpacity>
                   <View style={{ paddingHorizontal: t.spacing.lg, marginTop: t.spacing.md }}>
@@ -192,7 +194,7 @@ export function SavedScreen({ navigation }: Props) {
           {tab === 1 && (
             <>
               {savedDestinations.length === 0 ? (
-                <EmptyState icon="🔖" title="No Saved Destinations" message="Save destinations from the detail page to see them here!" />
+                <EmptyState icon="🔖" title={tx('noSaved')} message={tx('noSavedMsg')} />
               ) : (
                 <View style={{ paddingHorizontal: t.spacing.lg, marginTop: t.spacing.md, gap: t.spacing.md }}>
                   {savedDestinations.map((saved) => {
@@ -229,7 +231,7 @@ export function SavedScreen({ navigation }: Props) {
           {tab === 2 && (
             <>
               {wishlistItems.length === 0 ? (
-                <EmptyState icon="⭐" title="Wishlist Empty" message="Add destinations to your wishlist from the detail page!" />
+                <EmptyState icon="⭐" title={tx('wishlistEmpty')} message={tx('wishlistEmptyMsg')} />
               ) : (
                 <View style={{ paddingHorizontal: t.spacing.lg, marginTop: t.spacing.md, gap: t.spacing.md }}>
                   {wishlistItems.map((item) => (
@@ -269,7 +271,7 @@ export function SavedScreen({ navigation }: Props) {
       <Modal visible={showYearPicker} transparent animationType="fade">
         <TouchableOpacity style={{ flex: 1, justifyContent: 'center', backgroundColor: 'rgba(0,0,0,0.4)', padding: 40 }} activeOpacity={1} onPress={() => setShowYearPicker(false)}>
           <View style={{ backgroundColor: t.colors.surface, borderRadius: t.radius.lg, padding: 20 }} onStartShouldSetResponder={() => true}>
-            <Text style={{ fontWeight: '700', fontSize: 18, color: t.colors.onSurface, textAlign: 'center', marginBottom: 12 }}>Select Year</Text>
+            <Text style={{ fontWeight: '700', fontSize: 18, color: t.colors.onSurface, textAlign: 'center', marginBottom: 12 }}>{tx('selectYear')}</Text>
             {YEARS.map((y) => (
               <TouchableOpacity key={y} onPress={() => { setYearFilter(y); setShowYearPicker(false); }}
                 style={{ paddingVertical: 12, borderBottomWidth: 1, borderBottomColor: t.colors.outline }}>
@@ -286,7 +288,7 @@ export function SavedScreen({ navigation }: Props) {
       <Modal visible={showRegionPicker} transparent animationType="fade">
         <TouchableOpacity style={{ flex: 1, justifyContent: 'center', backgroundColor: 'rgba(0,0,0,0.4)', padding: 40 }} activeOpacity={1} onPress={() => setShowRegionPicker(false)}>
           <View style={{ backgroundColor: t.colors.surface, borderRadius: t.radius.lg, padding: 20 }} onStartShouldSetResponder={() => true}>
-            <Text style={{ fontWeight: '700', fontSize: 18, color: t.colors.onSurface, textAlign: 'center', marginBottom: 12 }}>Select Region</Text>
+            <Text style={{ fontWeight: '700', fontSize: 18, color: t.colors.onSurface, textAlign: 'center', marginBottom: 12 }}>{tx('selectRegion')}</Text>
             {REGIONS.map((r) => (
               <TouchableOpacity key={r} onPress={() => { setRegionFilter(r); setShowRegionPicker(false); }}
                 style={{ paddingVertical: 12, borderBottomWidth: 1, borderBottomColor: t.colors.outline }}>
