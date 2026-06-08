@@ -1,7 +1,7 @@
 import React, { createContext, useContext, useState, useEffect, useCallback } from 'react';
-import { Platform } from 'react-native';
 import * as authService from '../services/auth';
 import { setAuthToken, setOnAuthError } from '../services/api';
+import { getItem, setItem, removeItem } from '../utils/storage';
 
 interface UserProfile {
   id: string;
@@ -37,20 +37,15 @@ const AuthContext = createContext<AuthContextValue | null>(null);
 
 const TOKEN_KEY = 'tripvoyage_token';
 
-function getStoredToken(): string | null {
-  if (Platform.OS === 'web') {
-    return localStorage.getItem(TOKEN_KEY);
-  }
-  return null;
+async function getStoredToken(): Promise<string | null> {
+  return getItem(TOKEN_KEY);
 }
 
-function storeToken(token: string | null) {
-  if (Platform.OS === 'web') {
-    if (token) {
-      localStorage.setItem(TOKEN_KEY, token);
-    } else {
-      localStorage.removeItem(TOKEN_KEY);
-    }
+async function storeToken(token: string | null) {
+  if (token) {
+    await setItem(TOKEN_KEY, token);
+  } else {
+    await removeItem(TOKEN_KEY);
   }
 }
 
@@ -74,21 +69,23 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   }, [logout]);
 
   useEffect(() => {
-    const token = getStoredToken();
-    if (token) {
-      setAuthToken(token);
-      authService.getMe()
-        .then((user) => {
-          setState({ user, token, isLoading: false, isAuthenticated: true, isGuest: false });
-        })
-        .catch(() => {
-          storeToken(null);
-          setAuthToken(null);
-          setState({ user: null, token: null, isLoading: false, isAuthenticated: false, isGuest: false });
-        });
-    } else {
-      setState((s) => ({ ...s, isLoading: false }));
-    }
+    (async () => {
+      const token = await getStoredToken();
+      if (token) {
+        setAuthToken(token);
+        authService.getMe()
+          .then((user) => {
+            setState({ user, token, isLoading: false, isAuthenticated: true, isGuest: false });
+          })
+          .catch(() => {
+            storeToken(null);
+            setAuthToken(null);
+            setState({ user: null, token: null, isLoading: false, isAuthenticated: false, isGuest: false });
+          });
+      } else {
+        setState((s) => ({ ...s, isLoading: false }));
+      }
+    })();
   }, []);
 
   const login = useCallback(async (email: string, password: string) => {

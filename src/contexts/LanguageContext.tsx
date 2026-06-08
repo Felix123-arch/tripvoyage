@@ -2,6 +2,7 @@ import React, { createContext, useContext, useState, useEffect, useCallback } fr
 import { Platform } from 'react-native';
 import { Lang, t as translate } from '../i18n/translations';
 import { useAuth } from './AuthContext';
+import { getItem, setItem } from '../utils/storage';
 
 interface LanguageState {
   lang: Lang;
@@ -17,18 +18,14 @@ const LanguageContext = createContext<LanguageState>({
 
 const LANG_KEY = 'tripvoyage_lang';
 
-function getStoredLang(): Lang | null {
-  if (Platform.OS === 'web') {
-    const stored = localStorage.getItem(LANG_KEY);
-    if (stored === 'zh' || stored === 'en') return stored;
-  }
+async function getStoredLang(): Promise<Lang | null> {
+  const stored = await getItem(LANG_KEY);
+  if (stored === 'zh' || stored === 'en') return stored;
   return null;
 }
 
-function storeLang(lang: Lang) {
-  if (Platform.OS === 'web') {
-    localStorage.setItem(LANG_KEY, lang);
-  }
+async function storeLang(lang: Lang) {
+  await setItem(LANG_KEY, lang);
 }
 
 // Map user language string to Lang
@@ -41,13 +38,18 @@ function userLangToCode(langStr?: string): Lang | null {
 
 export function LanguageProvider({ children }: { children: React.ReactNode }) {
   const { user } = useAuth();
-  const [lang, setLangState] = useState<Lang>(() => {
-    // Priority: stored preference > browser language > default en
-    const stored = getStoredLang();
-    if (stored) return stored;
-    if (Platform.OS === 'web' && navigator.language.startsWith('zh')) return 'zh';
-    return 'en';
-  });
+  const [lang, setLangState] = useState<Lang>('en');
+
+  useEffect(() => {
+    (async () => {
+      const stored = await getStoredLang();
+      if (stored) {
+        setLangState(stored);
+      } else if (Platform.OS === 'web' && navigator.language.startsWith('zh')) {
+        setLangState('zh');
+      }
+    })();
+  }, []);
 
   // Sync with user profile language
   useEffect(() => {
@@ -62,7 +64,7 @@ export function LanguageProvider({ children }: { children: React.ReactNode }) {
 
   const setLang = useCallback((newLang: Lang) => {
     setLangState(newLang);
-    storeLang(newLang);
+    storeLang(newLang).catch(() => {});
   }, []);
 
   const t = useCallback((key: string) => translate(lang, key), [lang]);
