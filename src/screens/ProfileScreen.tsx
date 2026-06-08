@@ -1,6 +1,7 @@
 import { View, Text, ScrollView, StyleSheet, Alert, Modal, TouchableOpacity } from 'react-native';
 import { useState } from 'react';
 import { LinearGradient } from 'expo-linear-gradient';
+import { Platform } from 'react-native';
 import { useTheme, useThemeActions } from '../theme';
 import { Tag, BudgetSelector, Toggle, Button } from '../components';
 import { useAuth } from '../contexts/AuthContext';
@@ -89,10 +90,14 @@ export function ProfileScreen({ navigation }: Props) {
   };
 
   const handleLogout = () => {
-    Alert.alert(tx('logoutTitle'), tx('logoutMsg'), [
-      { text: tx('cancel'), style: 'cancel' },
-      { text: tx('logOut'), style: 'destructive', onPress: logout },
-    ]);
+    if (Platform.OS === 'web') {
+      if (window.confirm(tx('logoutMsg'))) logout();
+    } else {
+      Alert.alert(tx('logoutTitle'), tx('logoutMsg'), [
+        { text: tx('cancel'), style: 'cancel' },
+        { text: tx('logOut'), style: 'destructive', onPress: logout },
+      ]);
+    }
   };
 
   const currentCurrencyLabel = settings.currency;
