@@ -78,7 +78,7 @@ export function ItineraryScreen({ navigation, route }: Props) {
 
   const handleCreate = async () => {
     if (!newName.trim() || !newDestination.trim() || !newStartDate || !newEndDate) {
-      setCreateError('Please fill in all fields.');
+      setCreateError(tx('fillAllFields'));
       return;
     }
     setCreating(true);
@@ -89,6 +89,7 @@ export function ItineraryScreen({ navigation, route }: Props) {
         destination: newDestination.trim(),
         startDate: newStartDate,
         endDate: newEndDate,
+        year: parseInt(newStartDate.split('-')[0]) || new Date().getFullYear(),
       });
       setItineraries((prev) => [itinerary, ...prev]);
       setShowCreate(false);
