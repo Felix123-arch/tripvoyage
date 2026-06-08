@@ -2,6 +2,7 @@ import { View, Text, ScrollView, StyleSheet, TouchableOpacity, Alert } from 'rea
 import { useState, useEffect, useCallback } from 'react';
 import { useTheme } from '../theme';
 import { useLang } from '../contexts/LanguageContext';
+import { useAuth } from '../contexts/AuthContext';
 import { td } from '../i18n/translations';
 import { SearchBar, Chip, Card, Button, LoadingOverlay, ErrorBanner, EmptyState } from '../components';
 import * as api from '../services';
@@ -16,6 +17,7 @@ const CAT_VALUES = ['All', 'Beach', 'Mountain', 'City Break', 'Family', 'Adventu
 export function HomeScreen({ navigation }: Props) {
   const t = useTheme();
   const { t: tx, lang } = useLang();
+  const { user } = useAuth();
   const [search, setSearch] = useState('');
   const [activeCategory, setActiveCategory] = useState('All');
   const [destinations, setDestinations] = useState<api.Destination[]>([]);
@@ -30,14 +32,24 @@ export function HomeScreen({ navigation }: Props) {
       const params: any = {};
       if (activeCategory !== 'All') params.category = activeCategory;
       if (search.trim()) params.search = search.trim();
-      const data = await api.getDestinations(params);
+      let data = await api.getDestinations(params);
+      // Personalized ranking: boost destinations matching user preferences
+      const prefs = (user?.preferences || []).map((p: any) => typeof p === 'string' ? p.toLowerCase() : p.preference?.toLowerCase() || '');
+      if (prefs.length > 0) {
+        data = [...data].sort((a, b) => {
+          const aMatch = prefs.some((p: string) => a.category.toLowerCase().includes(p) || a.description.toLowerCase().includes(p)) ? 1 : 0;
+          const bMatch = prefs.some((p: string) => b.category.toLowerCase().includes(p) || b.description.toLowerCase().includes(p)) ? 1 : 0;
+          if (aMatch !== bMatch) return bMatch - aMatch;
+          return b.rating - a.rating;
+        });
+      }
       setDestinations(data);
     } catch (err: any) {
       setError(err.response?.data?.error || err.message || tx('failedLoadDest'));
     } finally {
       setLoading(false);
     }
-  }, [activeCategory, search]);
+  }, [activeCategory, search, user?.preferences]);
 
   useEffect(() => {
     loadDestinations();
