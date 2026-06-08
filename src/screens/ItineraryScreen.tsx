@@ -200,7 +200,7 @@ export function ItineraryScreen({ navigation, route }: Props) {
   if (loading) return <LoadingOverlay message={tx('loadingItinerary')} />;
   if (error) return <ErrorBanner message={error} onRetry={loadItineraries} />;
 
-  if (itineraries.length === 0 && !showCreate) {
+  if (itineraries.length === 0) {
     return (
       <View style={[s.screen, { backgroundColor: t.colors.background }]}>
         <View style={[s.header, { backgroundColor: t.colors.surface, borderBottomColor: t.colors.outline, paddingHorizontal: t.spacing.lg, paddingTop: t.spacing['2xl'], paddingBottom: t.spacing.md }]}>
@@ -212,7 +212,7 @@ export function ItineraryScreen({ navigation, route }: Props) {
         <View style={{ paddingHorizontal: 40, marginBottom: 40 }}>
           <Button title={tx('newTrip')} onPress={() => setShowCreate(true)} block />
         </View>
-        {/* Create Modal rendered here too */}
+        {/* Create Modal */}
         <Modal visible={showCreate} animationType="slide" transparent>
           {renderCreateModal()}
         </Modal>
