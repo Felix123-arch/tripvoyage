@@ -1,6 +1,7 @@
 import { View, Text, ScrollView, StyleSheet, Alert, Modal, TouchableOpacity } from 'react-native';
 import { useState, useEffect, useCallback } from 'react';
 import { useTheme } from '../theme';
+import { useLang } from '../contexts/LanguageContext';
 import { ChecklistCard, ArticleCard, ReviewCard, Button, LoadingOverlay, ErrorBanner, EmptyState } from '../components';
 import * as api from '../services';
 
@@ -10,6 +11,7 @@ interface Props {
 
 export function GuidesScreen({ navigation }: Props) {
   const t = useTheme();
+  const { t: tx } = useLang();
   const [checklist, setChecklist] = useState<api.ChecklistItem[]>([]);
   const [articles, setArticles] = useState<api.Article[]>([]);
   const [reviews, setReviews] = useState<api.Review[]>([]);
@@ -83,7 +85,7 @@ export function GuidesScreen({ navigation }: Props) {
       '🔹 Can I change my preferences?\n   Yes! Go to Profile tab to update travel preferences and settings.',
       '🔹 Is my data secure?\n   Yes, we use encrypted connections and never share your data.',
     ].join('\n\n');
-    Alert.alert('Help Center & FAQs', faqs, [{ text: 'Got it!' }]);
+    Alert.alert(tx('helpCenter'), faqs, [{ text: tx('gotIt') }]);
   };
 
   if (loading) return <LoadingOverlay message="Loading guides..." />;
@@ -94,7 +96,7 @@ export function GuidesScreen({ navigation }: Props) {
       <View style={[s.header, { backgroundColor: t.colors.surface, borderBottomColor: t.colors.outline, paddingHorizontal: t.spacing.lg, paddingTop: t.spacing['2xl'], paddingBottom: t.spacing.md }]}>
         <View style={s.headerRow}>
           <Text style={[s.title, { fontFamily: t.typography.fontFamily, fontWeight: '600', fontSize: t.typography.bodyLg.fontSize, color: t.colors.onSurface }]}>
-            Guides & Help
+            {tx('guidesHelp')}
           </Text>
           <View style={{ flex: 1 }} />
           <TouchableOpacity onPress={handleHelpCenter}>
@@ -109,7 +111,7 @@ export function GuidesScreen({ navigation }: Props) {
         </View>
 
         <Text style={[s.sectionTitle, { fontFamily: t.typography.fontFamily, fontWeight: '600', fontSize: t.typography.headline.fontSize, color: t.colors.onSurface, marginTop: t.spacing['2xl'], paddingHorizontal: t.spacing.lg }]}>
-          Curated Guides
+          {tx('curatedGuides')}
         </Text>
         <View style={{ paddingHorizontal: t.spacing.lg, marginTop: t.spacing.md, gap: t.spacing.md }}>
           {articles.length > 0 ? (
@@ -126,15 +128,15 @@ export function GuidesScreen({ navigation }: Props) {
         </View>
 
         <Text style={[s.sectionTitle, { fontFamily: t.typography.fontFamily, fontWeight: '600', fontSize: t.typography.headline.fontSize, color: t.colors.onSurface, marginTop: t.spacing['2xl'], paddingHorizontal: t.spacing.lg }]}>
-          Support
+          {tx('support')}
         </Text>
         <View style={{ paddingHorizontal: t.spacing.lg, marginTop: t.spacing.md, gap: t.spacing.md }}>
-          <Button title={'🎧 Contact Customer Service'} onPress={handleContactSupport} block />
-          <Button title={'❓ Help Center & FAQs'} onPress={handleHelpCenter} variant="secondary" block />
+          <Button title={tx('contactSupport')} onPress={handleContactSupport} block />
+          <Button title={tx('helpCenter')} onPress={handleHelpCenter} variant="secondary" block />
         </View>
 
         <Text style={[s.sectionTitle, { fontFamily: t.typography.fontFamily, fontWeight: '600', fontSize: t.typography.headline.fontSize, color: t.colors.onSurface, marginTop: t.spacing['2xl'], paddingHorizontal: t.spacing.lg }]}>
-          Community Tips
+          {tx('communityTips')}
         </Text>
         <View style={{ paddingHorizontal: t.spacing.lg, marginTop: t.spacing.md, gap: t.spacing.md }}>
           {reviews.length > 0 ? (

@@ -178,7 +178,7 @@ export function ItineraryScreen({ navigation, route }: Props) {
     } else if (Platform.OS === 'web') {
       try {
         await navigator.clipboard.writeText(text);
-        Alert.alert('Copied!', 'Itinerary details copied to clipboard.');
+        Alert.alert(tx('copiedTitle'), tx('copiedMsg'));
       } catch {
         Alert.alert('Share', text);
       }
@@ -397,9 +397,9 @@ export function ItineraryScreen({ navigation, route }: Props) {
 
         <View style={{ paddingHorizontal: t.spacing.lg, marginTop: t.spacing.xl }}>
           <View style={s.fabRow}>
-            <Button title="+ Add Activity" onPress={() => setShowAddActivity(true)} size="sm" style={{ flex: 1 }} />
-            <Button title="Share" onPress={handleShare} variant="secondary" size="sm" style={{ flex: 1 }} />
-            <Button title="Book Transport" onPress={handleBookTransport} variant="secondary" size="sm" style={{ flex: 1 }} />
+            <Button title={tx('addActivity')} onPress={() => setShowAddActivity(true)} size="sm" style={{ flex: 1 }} />
+            <Button title={tx('share')} onPress={handleShare} variant="secondary" size="sm" style={{ flex: 1 }} />
+            <Button title={tx('bookTransport')} onPress={handleBookTransport} variant="secondary" size="sm" style={{ flex: 1 }} />
           </View>
           <TouchableOpacity onPress={() => setShowCreate(true)}
             style={[s.newTripBtn, { borderColor: t.colors.outline, borderRadius: t.radius.md, borderWidth: 1, marginTop: t.spacing.md }]}>
