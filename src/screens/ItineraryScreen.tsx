@@ -1,5 +1,6 @@
 import { View, Text, ScrollView, StyleSheet, TouchableOpacity, Modal, TextInput, Alert, Platform } from 'react-native';
 import { useState, useEffect, useCallback } from 'react';
+import { useNavigation } from '@react-navigation/native';
 import { useTheme } from '../theme';
 import { useLang } from '../contexts/LanguageContext';
 import { Timeline, Button, LoadingOverlay, ErrorBanner, EmptyState } from '../components';
@@ -64,6 +65,14 @@ export function ItineraryScreen({ navigation, route }: Props) {
     loadItineraries();
   }, [loadItineraries]);
 
+  // Reload when tab is focused (after adding activity from map, etc.)
+  useEffect(() => {
+    const unsub = navigation.addListener?.('focus', () => {
+      loadItineraries();
+    });
+    return unsub;
+  }, [navigation, loadItineraries]);
+
   // Handle addDestination param from DestinationDetailScreen
   useEffect(() => {
     if (route?.params?.addDestination) {
@@ -92,12 +101,10 @@ export function ItineraryScreen({ navigation, route }: Props) {
         year: parseInt(newStartDate.split('-')[0]) || new Date().getFullYear(),
       });
       setItineraries((prev) => [itinerary, ...prev]);
-      setShowCreate(false);
-      setNewName('');
-      setNewDestination('');
-      setNewStartDate('');
-      setNewEndDate('');
       setActiveIndex(0);
+      // Reset form and close modal
+      setNewName(''); setNewDestination(''); setNewStartDate(''); setNewEndDate('');
+      setTimeout(() => setShowCreate(false), 100);
     } catch (err: any) {
       setCreateError(err.response?.data?.error || 'Failed to create itinerary');
     } finally {

@@ -1,4 +1,5 @@
-import React, { createContext, useContext, useState, useCallback } from 'react';
+import React, { createContext, useContext, useState, useCallback, useEffect } from 'react';
+import { Platform } from 'react-native';
 import { lightColors, darkColors, typography, spacing, radius, elevation, animation, touchMin } from './tokens';
 
 type ColorScheme = typeof lightColors;
@@ -36,7 +37,12 @@ const ThemeContext = createContext<ThemeState>({
 });
 
 export function ThemeProvider({ children }: { children: React.ReactNode }) {
-  const [dark, setDark] = useState(false);
+  const [dark, setDark] = useState(() => {
+    if (Platform.OS === 'web') {
+      return localStorage.getItem('tripvoyage_dark') === 'true';
+    }
+    return false;
+  });
 
   const theme: Theme = {
     colors: (dark ? darkColors : lightColors) as ColorScheme,
@@ -50,7 +56,12 @@ export function ThemeProvider({ children }: { children: React.ReactNode }) {
   };
 
   const toggleTheme = useCallback(() => setDark((d) => !d), []);
-  const setDarkMode = useCallback((d: boolean) => setDark(d), []);
+  const setDarkMode = useCallback((d: boolean) => {
+    setDark(d);
+    if (Platform.OS === 'web') {
+      localStorage.setItem('tripvoyage_dark', String(d));
+    }
+  }, []);
 
   return (
     <ThemeContext.Provider value={{ theme, toggleTheme, setDarkMode }}>
