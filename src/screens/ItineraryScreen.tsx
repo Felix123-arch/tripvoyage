@@ -28,6 +28,8 @@ export function ItineraryScreen({ navigation, route }: Props) {
   const [activeIndex, setActiveIndex] = useState(0);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [weatherIndex, setWeatherIndex] = useState(0);
+  const [weatherData, setWeatherData] = useState<{label: string; temp: string; cond: string}[]>([]);
 
   // Create itinerary modal
   const [showCreate, setShowCreate] = useState(false);
@@ -77,12 +79,43 @@ export function ItineraryScreen({ navigation, route }: Props) {
         })
       );
       setItineraries(withWeather);
+      // Build per-location weather data for carousel
+      const it = withWeather[0];
+      if (it) {
+        const locations: {label: string; loc: string}[] = [{ label: td(lang, it.destination)?.name || it.destination, loc: it.destination }];
+        it.days?.forEach((day: any) => {
+          day.activities?.forEach((act: any) => {
+            if (act.location && !locations.find((l) => l.loc === act.location)) {
+              locations.push({ label: act.location + (act.title ? ` (${act.title.slice(0,8)})` : ''), loc: act.location });
+            }
+          });
+        });
+        // Fetch weather for each location
+        const weatherItems = await Promise.all(
+          locations.map(async (loc) => {
+            try {
+              const { data } = await (await import('../services/api')).default.get('/weather', { params: { city: loc.loc } });
+              return { label: loc.label, temp: data.temp || '--', cond: data.condition || '' };
+            } catch { return { label: loc.label, temp: '--', cond: '' }; }
+          })
+        );
+        setWeatherData(weatherItems.filter((w) => w.temp !== '--'));
+      }
     } catch (err: any) {
       setError(err.response?.data?.error || err.message || tx('failedLoadItin'));
     } finally {
       setLoading(false);
     }
   }, []);
+
+  // Rotate weather every 3 seconds
+  useEffect(() => {
+    if (weatherData.length <= 1) return;
+    const timer = setInterval(() => {
+      setWeatherIndex((i) => (i + 1) % weatherData.length);
+    }, 3000);
+    return () => clearInterval(timer);
+  }, [weatherData.length]);
 
   useEffect(() => {
     loadItineraries();
@@ -477,13 +510,13 @@ export function ItineraryScreen({ navigation, route }: Props) {
               <Text style={s.weatherIcon}>{'☀️'}</Text>
               <View>
                 <Text style={[s.weatherLoc, { fontFamily: t.typography.fontFamily, fontSize: t.typography.body.fontSize, color: 'rgba(255,255,255,0.9)' }]}>
-                  {td(lang, itinerary.destination)?.name || itinerary.destination}
+                  {weatherData[weatherIndex]?.label || td(lang, itinerary.destination)?.name || itinerary.destination}
                 </Text>
                 <Text style={[s.weatherTemp, { fontFamily: t.typography.fontFamily, fontWeight: '700', fontSize: 36, color: '#fff' }]}>
-                  {itinerary.weatherTemp || '22'}°C
+                  {weatherData[weatherIndex]?.temp || itinerary.weatherTemp || '22'}°C
                 </Text>
                 <Text style={[s.weatherCond, { fontFamily: t.typography.fontFamily, fontSize: t.typography.bodySm.fontSize, color: 'rgba(255,255,255,0.85)' }]}>
-                  {itinerary.weatherCond || tx('sunny')} · {itinerary.weatherDesc || tx('perfectForExploring')}
+                  {weatherData[weatherIndex]?.cond || itinerary.weatherCond || tx('sunny')} · {weatherData.length > 1 ? `${weatherIndex + 1}/${weatherData.length}` : tx('perfectForExploring')}
                 </Text>
               </View>
             </View>
