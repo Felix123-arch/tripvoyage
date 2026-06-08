@@ -78,6 +78,7 @@ export async function createItinerary(userId: string, data: z.infer<typeof creat
       userId,
       name: data.name,
       destination: data.destination,
+      status: 'upcoming',
       destinationId: data.destinationId,
       startDate: data.startDate,
       endDate: data.endDate,
