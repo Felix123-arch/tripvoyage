@@ -90,15 +90,17 @@ export function ItineraryScreen({ navigation, route }: Props) {
             }
           });
         });
-        // Fetch weather for each location
-        const weatherItems = await Promise.all(
-          locations.map(async (loc) => {
-            try {
-              const { data } = await (await import('../services/api')).default.get('/weather', { params: { city: loc.loc } });
-              return { label: loc.label, temp: data.temp || '--', cond: data.condition || '' };
-            } catch { return { label: loc.label, temp: '--', cond: '' }; }
-          })
-        );
+        // Fetch weather for each location (max 3, with delay to avoid rate limit)
+        const limitedLocations = locations.slice(0, 3);
+        const weatherItems: {label: string; temp: string; cond: string}[] = [];
+        for (const loc of limitedLocations) {
+          try {
+            const { data } = await (await import('../services/api')).default.get('/weather', { params: { city: loc.loc } });
+            weatherItems.push({ label: loc.label, temp: data.temp || '--', cond: data.condition || '' });
+          } catch { weatherItems.push({ label: loc.label, temp: '--', cond: '' }); }
+          // Small delay between requests
+          await new Promise((r) => setTimeout(r, 300));
+        }
         setWeatherData(weatherItems.filter((w) => w.temp !== '--'));
       }
     } catch (err: any) {

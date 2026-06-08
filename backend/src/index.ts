@@ -22,7 +22,7 @@ const app = express();
 app.use(cors({ origin: true, credentials: true }));
 app.use(express.json());
 app.use('/images', express.static(path.join(process.cwd(), 'public', 'images')));
-app.use(rateLimit({ windowMs: 15 * 60 * 1000, max: 100, standardHeaders: true, legacyHeaders: false }));
+app.use(rateLimit({ windowMs: 15 * 60 * 1000, max: 500, standardHeaders: true, legacyHeaders: false }));
 
 // Image proxy with disk cache — server fetches and caches images
 import * as crypto from 'crypto';
