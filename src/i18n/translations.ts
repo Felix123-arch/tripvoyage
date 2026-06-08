@@ -5,6 +5,41 @@ export const t = (lang: Lang, key: string): string => {
   return (map as any)[key] || (translations.en as any)[key] || key;
 };
 
+// Destination name/description translations
+const destData: Record<string, { zhName: string; zhDesc: string }> = {
+  'Tokyo, Japan': { zhName: '日本东京', zhDesc: '探索东京这座融合超现代与传统的活力都市，从涩谷十字路口到宁静的明治神宫。' },
+  'Kyoto, Japan': { zhName: '日本京都', zhDesc: '漫步于古老的寺庙、宁静的禅园和迷人的艺伎街区，感受日本的千年古都。' },
+  'Paris, France': { zhName: '法国巴黎', zhDesc: '在光之城体验世界级艺术、美食与浪漫，从埃菲尔铁塔到蒙马特高地。' },
+  'Bali, Indonesia': { zhName: '印尼巴厘岛', zhDesc: '沉浸在热带天堂的神庙、梯田和原始海滩之中，感受众神之岛的宁静。' },
+  'Swiss Alps': { zhName: '瑞士阿尔卑斯山', zhDesc: '在壮丽的山峰、清澈的湖泊和迷人的村庄中体验世界级滑雪与徒步。' },
+  'Santorini, Greece': { zhName: '希腊圣托里尼', zhDesc: '欣赏爱琴海上令人屏息的日落、蓝白建筑和火山沙滩的绝美风光。' },
+  'New York City, USA': { zhName: '美国纽约', zhDesc: '感受不夜城的活力——从时代广场、百老汇到中央公园和世界级博物馆。' },
+  'Beijing, China': { zhName: '中国北京', zhDesc: '漫步于故宫的宏伟殿堂，攀登雄伟的万里长城，品尝地道北京烤鸭。' },
+  'Shanghai, China': { zhName: '中国上海', zhDesc: '领略外滩的璀璨天际线，穿梭于豫园的古典园林与现代艺术馆之间。' },
+  'Machu Picchu, Peru': { zhName: '秘鲁马丘比丘', zhDesc: '探访神秘的印加古城，在安第斯山脉的云雾之中感受千年文明的震撼。' },
+  'Maldives': { zhName: '马尔代夫', zhDesc: '在水上别墅中享受碧蓝泻湖、白色沙滩和壮丽的珊瑚礁海底世界。' },
+  'Barcelona, Spain': { zhName: '西班牙巴塞罗那', zhDesc: '沉醉于高迪的建筑奇观、地中海的阳光沙滩和充满活力的加泰罗尼亚文化。' },
+  'Queenstown, New Zealand': { zhName: '新西兰皇后镇', zhDesc: '在南阿尔卑斯山环抱的冒险之都体验蹦极、跳伞和壮丽的米尔福德峡湾。' },
+  'Dubai, UAE': { zhName: '阿联酋迪拜', zhDesc: '感受超现代都市的奢华——从世界最高建筑哈利法塔到沙漠冲沙探险。' },
+  'Rome, Italy': { zhName: '意大利罗马', zhDesc: '穿越两千年的历史，漫步于古罗马斗兽场、梵蒂冈和特雷维喷泉之间。' },
+  'Rio de Janeiro, Brazil': { zhName: '巴西里约热内卢', zhDesc: '在基督像的注视下，体验科帕卡巴纳海滩、桑巴舞和壮丽的瓜纳巴拉湾。' },
+  'Amsterdam, Netherlands': { zhName: '荷兰阿姆斯特丹', zhDesc: '沿着迷人的运河骑行，探访梵高博物馆和充满活力的约旦区街道。' },
+  'Banff, Canada': { zhName: '加拿大班夫', zhDesc: '在落基山脉的壮丽风光中徒步露营，探访露易丝湖的翡翠色湖水和班夫国家公园。' },
+  'Phuket, Thailand': { zhName: '泰国普吉岛', zhDesc: '享受安达曼海的热带风情——皮皮岛跳岛游、攀牙湾独木舟和芭东夜市。' },
+  'Istanbul, Turkey': { zhName: '土耳其伊斯坦布尔', zhDesc: '漫步于横跨欧亚的城市，探访蓝色清真寺、圣索菲亚大教堂和大巴扎集市。' },
+  'Sydney, Australia': { zhName: '澳大利亚悉尼', zhDesc: '在悉尼歌剧院旁欣赏海港大桥的壮丽景色，体验邦迪海滩的冲浪文化。' },
+  'Reykjavik, Iceland': { zhName: '冰岛雷克雅未克', zhDesc: '追逐北极光、浸泡蓝湖温泉、探索冰与火交织的壮丽自然奇观。' },
+  'Chengdu, China': { zhName: '中国成都', zhDesc: '近距离接触可爱的大熊猫，品尝麻辣火锅，漫步宽窄巷子和锦里古街。' },
+  'Marrakech, Morocco': { zhName: '摩洛哥马拉喀什', zhDesc: '迷失在迷宫般的麦地那老城集市中，感受北非的色彩、香料与异域风情。' },
+};
+
+export const td = (lang: Lang, name: string): { name: string; desc: string } | null => {
+  if (lang === 'en') return null;
+  const d = destData[name];
+  if (!d) return null;
+  return { name: d.zhName, desc: d.zhDesc };
+};
+
 const translations: Record<Lang, Record<string, string>> = {
   zh: {
     // App

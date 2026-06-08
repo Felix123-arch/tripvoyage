@@ -2,6 +2,7 @@ import { View, Text, ScrollView, StyleSheet } from 'react-native';
 import { useState, useEffect, useCallback } from 'react';
 import { useTheme } from '../theme';
 import { useLang } from '../contexts/LanguageContext';
+import { td } from '../i18n/translations';
 import { SearchBar, Chip, Card, Button, LoadingOverlay, ErrorBanner, EmptyState } from '../components';
 import * as api from '../services';
 
@@ -14,7 +15,7 @@ const CAT_VALUES = ['All', 'Beach', 'Mountain', 'City Break', 'Family', 'Adventu
 
 export function HomeScreen({ navigation }: Props) {
   const t = useTheme();
-  const { t: tx } = useLang();
+  const { t: tx, lang } = useLang();
   const [search, setSearch] = useState('');
   const [activeCategory, setActiveCategory] = useState('All');
   const [destinations, setDestinations] = useState<api.Destination[]>([]);
@@ -100,18 +101,21 @@ export function HomeScreen({ navigation }: Props) {
             showsHorizontalScrollIndicator={false}
             contentContainerStyle={{ paddingHorizontal: t.spacing.lg, marginTop: t.spacing.md, gap: t.spacing.md }}
           >
-            {destinations.map((dest) => (
-              <Card
-                key={dest.id}
-                name={dest.name}
-                description={dest.description}
-                rating={dest.rating}
-                reviewCount={dest.reviewCount}
-                gradient={[dest.gradientStart, dest.gradientEnd]}
-                imageUrl={dest.imageUrl}
-                onPress={() => navigation.navigate('DestinationDetail', { destination: dest })}
-              />
-            ))}
+            {destinations.map((dest) => {
+              const dt = td(lang, dest.name);
+              return (
+                <Card
+                  key={dest.id}
+                  name={dt?.name || dest.name}
+                  description={dt?.desc || dest.description}
+                  rating={dest.rating}
+                  reviewCount={dest.reviewCount}
+                  gradient={[dest.gradientStart, dest.gradientEnd]}
+                  imageUrl={dest.imageUrl}
+                  onPress={() => navigation.navigate('DestinationDetail', { destination: dest })}
+                />
+              );
+            })}
           </ScrollView>
         )}
 
