@@ -6,6 +6,8 @@ import {
 import { LinearGradient } from 'expo-linear-gradient';
 import { useTheme } from '../theme';
 import { useAuth } from '../contexts/AuthContext';
+import { useLang } from '../contexts/LanguageContext';
+import { td } from '../i18n/translations';
 import { getImageUrl } from '../utils/imageProxy';
 import * as api from '../services';
 import { Button } from '../components';
@@ -19,6 +21,10 @@ export function DestinationDetailScreen({ navigation, route }: Props) {
   const t = useTheme();
   const { isAuthenticated } = useAuth();
   const { destination } = route.params as { destination: api.Destination };
+  const { t: tx, lang } = useLang();
+  const dt = td(lang, destination.name);
+  const destName = dt?.name || destination.name;
+  const destDesc = dt?.desc || destination.description;
   const [imgFailed, setImgFailed] = useState(false);
   const [reviews, setReviews] = useState<api.Review[]>([]);
   const [loadingReviews, setLoadingReviews] = useState(true);
@@ -58,7 +64,7 @@ export function DestinationDetailScreen({ navigation, route }: Props) {
 
   const handleSave = async () => {
     if (!isAuthenticated) {
-      Alert.alert('Login Required', 'Please log in to save destinations.');
+      Alert.alert(tx('loginRequired'), tx('loginToSave'));
       return;
     }
     setSaving(true);
@@ -71,7 +77,7 @@ export function DestinationDetailScreen({ navigation, route }: Props) {
         setSavedId(result.id);
       }
     } catch (err: any) {
-      Alert.alert('Error', err.response?.data?.error || 'Failed to update saved status');
+      Alert.alert(tx('error'), err.response?.data?.error || tx('failedSave'));
     } finally {
       setSaving(false);
     }
@@ -79,7 +85,7 @@ export function DestinationDetailScreen({ navigation, route }: Props) {
 
   const handleWishlist = async () => {
     if (!isAuthenticated) {
-      Alert.alert('Login Required', 'Please log in to use wishlist.');
+      Alert.alert(tx('loginRequired'), tx('loginToWishlist'));
       return;
     }
     setWishlisting(true);
@@ -92,7 +98,7 @@ export function DestinationDetailScreen({ navigation, route }: Props) {
         setWishlistId(result.id);
       }
     } catch (err: any) {
-      Alert.alert('Error', err.response?.data?.error || 'Failed to update wishlist');
+      Alert.alert(tx('error'), err.response?.data?.error || tx('failedSave'));
     } finally {
       setWishlisting(false);
     }
@@ -107,7 +113,7 @@ export function DestinationDetailScreen({ navigation, route }: Props) {
 
   const handleSubmitReview = async () => {
     if (!reviewText.trim() || !reviewName.trim()) {
-      setReviewError('Please enter your name and review.');
+      setReviewError(tx('fillAllFields'));
       return;
     }
     setSubmittingReview(true);
@@ -123,7 +129,7 @@ export function DestinationDetailScreen({ navigation, route }: Props) {
       setReviewText('');
       setReviewName('');
     } catch (err: any) {
-      setReviewError(err.response?.data?.error || 'Failed to submit review');
+      setReviewError(err.response?.data?.error || tx('failedSave'));
     } finally {
       setSubmittingReview(false);
     }
@@ -172,10 +178,10 @@ export function DestinationDetailScreen({ navigation, route }: Props) {
           <View style={s.titleRow}>
             <View style={{ flex: 1 }}>
               <Text style={[s.name, { fontFamily: t.typography.fontFamily, fontWeight: '700', fontSize: t.typography.title.fontSize, color: t.colors.onSurface }]}>
-                {destination.name}
+                {destName}
               </Text>
               <Text style={[s.category, { fontFamily: t.typography.fontFamily, fontSize: t.typography.bodySm.fontSize, color: t.colors.primary }]}>
-                {destination.category}
+                {tx(destination.category.toLowerCase())}
               </Text>
             </View>
             <View style={[s.ratingBadge, { backgroundColor: t.colors.tertiary, borderRadius: t.radius.md }]}>
@@ -186,12 +192,12 @@ export function DestinationDetailScreen({ navigation, route }: Props) {
           {/* Star rating */}
           <View style={s.ratingRow}>
             <Text style={{ color: t.colors.tertiary, fontSize: 16 }}>{'★'.repeat(Math.round(destination.rating))}{'☆'.repeat(5 - Math.round(destination.rating))}</Text>
-            <Text style={{ color: t.colors.onSurfaceMuted, fontSize: 13 }}>({destination.reviewCount.toLocaleString()} reviews)</Text>
+            <Text style={{ color: t.colors.onSurfaceMuted, fontSize: 13 }}>({destination.reviewCount.toLocaleString()} {tx('reviews')})</Text>
           </View>
 
           {/* Description */}
           <Text style={[s.description, { fontFamily: t.typography.fontFamily, fontSize: t.typography.body.fontSize, color: t.colors.onSurfaceVariant, lineHeight: 22 }]}>
-            {destination.description}
+            {destDesc}
           </Text>
 
           {/* Action Buttons */}
@@ -202,7 +208,7 @@ export function DestinationDetailScreen({ navigation, route }: Props) {
               disabled={saving}
             >
               <Text style={{ color: '#FFF', fontWeight: '600', fontSize: 14 }}>
-                {saving ? '...' : savedId ? '♥ Saved' : '♡ Save'}
+                {saving ? '...' : savedId ? tx('savedDest') : tx('saveDest')}
               </Text>
             </TouchableOpacity>
             <TouchableOpacity
@@ -211,34 +217,34 @@ export function DestinationDetailScreen({ navigation, route }: Props) {
               disabled={wishlisting}
             >
               <Text style={{ color: '#FFF', fontWeight: '600', fontSize: 14 }}>
-                {wishlisting ? '...' : wishlistId ? '★ In Wishlist' : '☆ Wishlist'}
+                {wishlisting ? '...' : wishlistId ? tx('inWishlist') : tx('addWishlist')}
               </Text>
             </TouchableOpacity>
             <TouchableOpacity
               style={[s.actionBtn, { backgroundColor: t.colors.surface, borderRadius: t.radius.md, borderColor: t.colors.primary, borderWidth: 1.5 }]}
               onPress={handleAddToItinerary}
             >
-              <Text style={{ color: t.colors.primary, fontWeight: '600', fontSize: 14 }}>+ Itinerary</Text>
+              <Text style={{ color: t.colors.primary, fontWeight: '600', fontSize: 14 }}>{tx('addToItinerary')}</Text>
             </TouchableOpacity>
           </View>
 
           {/* Reviews Section */}
           <View style={{ marginTop: t.spacing['2xl'] }}>
             <Text style={[s.sectionTitle, { fontFamily: t.typography.fontFamily, fontWeight: '700', fontSize: t.typography.headline.fontSize, color: t.colors.onSurface }]}>
-              Reviews ({reviews.length})
+              {tx('reviews')} ({reviews.length})
             </Text>
 
             {/* Add Review */}
             <View style={[s.reviewForm, { backgroundColor: t.colors.surface, borderRadius: t.radius.md, borderColor: t.colors.outline, borderWidth: 1 }]}>
               <TextInput
-                placeholder="Your name"
+                placeholder={tx('yourName')}
                 value={reviewName}
                 onChangeText={setReviewName}
                 style={[s.reviewInput, { fontFamily: t.typography.fontFamily, borderBottomColor: t.colors.outline, borderBottomWidth: 1, color: t.colors.onSurface }]}
                 placeholderTextColor={t.colors.onSurfaceMuted}
               />
               <TextInput
-                placeholder="Share your experience..."
+                placeholder={tx('shareExperience')}
                 value={reviewText}
                 onChangeText={setReviewText}
                 multiline
@@ -255,7 +261,7 @@ export function DestinationDetailScreen({ navigation, route }: Props) {
                 disabled={submittingReview}
               >
                 <Text style={{ color: '#FFF', fontWeight: '600', fontSize: 14 }}>
-                  {submittingReview ? 'Submitting...' : 'Submit Review'}
+                  {submittingReview ? tx('registering') : tx('submitReview')}
                 </Text>
               </TouchableOpacity>
             </View>
@@ -265,7 +271,7 @@ export function DestinationDetailScreen({ navigation, route }: Props) {
               <ActivityIndicator style={{ marginTop: 24 }} color={t.colors.primary} />
             ) : reviews.length === 0 ? (
               <Text style={{ color: t.colors.onSurfaceMuted, textAlign: 'center', marginTop: 24, fontSize: 14 }}>
-                No reviews yet. Be the first to share your experience!
+                {tx('noReviews')}
               </Text>
             ) : (
               reviews.map((review) => (
