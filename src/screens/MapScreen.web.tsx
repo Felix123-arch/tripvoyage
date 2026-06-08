@@ -80,18 +80,26 @@ export function MapScreen({ navigation, route }: Props) {
     const { AMap, map } = { AMap: amapRef.current, map: mapInstance.current };
     const route = itineraryRoutes;
 
-    // Collect all pins that match itinerary activities
-    const routePinNames = new Set<string>();
+    // Collect activity locations in day order
+    const routeLocations: string[] = [];
     route.days?.forEach((day: any) => {
       day.activities?.forEach((act: any) => {
-        if (act.location) routePinNames.add(act.location);
+        if (act.location) routeLocations.push(act.location);
       });
     });
 
-    // Find matching pins by location/name
-    const routePins = pins.filter((p) =>
-      routePinNames.has(p.name) || Array.from(routePinNames).some((n) => p.name.includes(n) || n.includes(p.name))
-    );
+    // Find matching pins preserving itinerary order
+    const routePins: api.MapPinData[] = [];
+    const used = new Set<string>();
+    for (const loc of routeLocations) {
+      const found = pins.find((p) =>
+        !used.has(p.id) && (p.name === loc || p.name.includes(loc) || loc.includes(p.name))
+      );
+      if (found) {
+        routePins.push(found);
+        used.add(found.id);
+      }
+    }
 
     if (routePins.length < 2) return;
 
