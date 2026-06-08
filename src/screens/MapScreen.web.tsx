@@ -107,6 +107,56 @@ export function MapScreen({ navigation }: Props) {
     }
   };
 
+  // Show driving route from user's location to the pin
+  const showRoute = (pin: api.MapPinData | null) => {
+    if (!pin || !mapInstance.current || !amapRef.current) return;
+    const { AMap, map } = { AMap: amapRef.current, map: mapInstance.current };
+
+    // Clear previous routes
+    if ((map as any)._driving) { (map as any)._driving.clear(); }
+
+    // Try geolocation
+    if (navigator.geolocation) {
+      navigator.geolocation.getCurrentPosition(
+        (pos) => {
+          const start = [pos.coords.longitude, pos.coords.latitude];
+          const end = [pin.lng, pin.lat];
+
+          AMap.plugin('AMap.DrivingRoute', () => {
+            const driving = new AMap.DrivingRoute({
+              map: map,
+              panel: undefined as any,
+              autoFitView: true,
+            } as any);
+            (map as any)._driving = driving;
+            driving.search(start as any, end as any, (status: string, result: any) => {
+              if (status === 'complete') {
+                setSelectedPin(null); // Close sheet to show route
+              } else {
+                alert('Route search failed');
+              }
+            });
+          });
+        },
+        () => {
+          // Geolocation denied — just show a line
+          const center = map.getCenter();
+          AMap.plugin('AMap.Polyline', () => {
+            const line = new AMap.Polyline({
+              path: [[center.lng, center.lat], [pin.lng, pin.lat]],
+              strokeColor: '#2563EB',
+              strokeWeight: 4,
+              strokeStyle: 'dashed',
+            });
+            map.add(line);
+            map.setFitView();
+            setSelectedPin(null);
+          });
+        }
+      );
+    }
+  };
+
   const handleAddToItineraryDay = async (itineraryId: string, dayId: string) => {
     if (!selectedPin) return;
     setAddingToItinerary(true);
@@ -288,6 +338,12 @@ export function MapScreen({ navigation }: Props) {
                 {addingToItinerary ? 'Loading...' : 'Add to Itinerary'}
               </Text>
             </TouchableOpacity>
+            <TouchableOpacity
+              style={[s.routeBtn, { backgroundColor: t.colors.secondary, borderRadius: t.radius.md }]}
+              onPress={() => showRoute(selectedPin)}
+            >
+              <Text style={{ color: '#FFF', fontWeight: '600', fontSize: 15 }}>Show Route</Text>
+            </TouchableOpacity>
             <TouchableOpacity style={[s.closeBtn, { borderColor: t.colors.outline, borderRadius: t.radius.md, borderWidth: 1 }]} onPress={() => setSelectedPin(null)}>
               <Text style={{ color: t.colors.onSurface }}>Close</Text>
             </TouchableOpacity>
@@ -355,6 +411,7 @@ const s = StyleSheet.create({
   sheetName: {},
   sheetActions: { flexDirection: 'row', gap: 12 },
   addBtn: { flex: 1, height: 46, justifyContent: 'center', alignItems: 'center' },
+  routeBtn: { flex: 1, height: 46, justifyContent: 'center', alignItems: 'center' },
   closeBtn: { width: 80, height: 46, justifyContent: 'center', alignItems: 'center' },
   sheetImgPlaceholder: { width: '100%', height: 180, alignItems: 'center', justifyContent: 'center' },
 });
