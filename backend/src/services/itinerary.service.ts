@@ -147,7 +147,7 @@ export async function addActivity(dayId: string, userId: string, data: z.infer<t
       time: data.time,
       location: data.location,
       type: data.type,
-      status: data.status,
+      status: (data as any).status,
       badge: data.badge,
     },
   });
