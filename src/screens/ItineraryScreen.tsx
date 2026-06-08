@@ -92,9 +92,8 @@ export function ItineraryScreen({ navigation, route }: Props) {
   useEffect(() => {
     if (route?.params?.addDestination) {
       const dest = route.params.addDestination as api.Destination;
-      const dName = td(lang, dest.name)?.name || dest.name;
-      setNewDestination(dName);
-      setNewName(`${tx('tripTo')} ${dName}`);
+      setNewDestination(dest.name);
+      setNewName(`${dest.name} ${lang === 'zh' ? '之旅' : 'Trip'}`);
       setShowCreate(true);
       // Clear the param so it doesn't trigger again
       route.params.addDestination = undefined;
