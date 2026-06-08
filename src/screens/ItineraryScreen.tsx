@@ -178,6 +178,29 @@ export function ItineraryScreen({ navigation, route }: Props) {
     }
   };
 
+  const handleDelete = () => {
+    const it = itineraries[activeIndex];
+    if (!it) return;
+    Alert.alert(
+      tx('deleteItinerary'),
+      tx('deleteConfirm'),
+      [
+        { text: tx('cancel'), style: 'cancel' },
+        { text: tx('delete'), style: 'destructive', onPress: async () => {
+          try {
+            await api.deleteItinerary(it.id);
+            setItineraries((prev) => prev.filter((x) => x.id !== it.id));
+            if (activeIndex >= itineraries.length - 1 && activeIndex > 0) {
+              setActiveIndex(activeIndex - 1);
+            }
+          } catch (err: any) {
+            Alert.alert(tx('error'), err.response?.data?.error || tx('failedSave'));
+          }
+        }},
+      ]
+    );
+  };
+
   const handleBookTransport = () => {
     setActTitle('Transport');
     setActType('transport');
@@ -426,7 +449,11 @@ export function ItineraryScreen({ navigation, route }: Props) {
           </View>
           <TouchableOpacity onPress={() => setShowCreate(true)}
             style={[s.newTripBtn, { borderColor: t.colors.outline, borderRadius: t.radius.md, borderWidth: 1, marginTop: t.spacing.md }]}>
-            <Text style={{ color: t.colors.primary, fontWeight: '600', fontSize: 14, textAlign: 'center' }}>+ Create Another Trip</Text>
+            <Text style={{ color: t.colors.primary, fontWeight: '600', fontSize: 14, textAlign: 'center' }}>{tx('anotherTrip')}</Text>
+          </TouchableOpacity>
+          <TouchableOpacity onPress={handleDelete}
+            style={[s.newTripBtn, { borderColor: t.colors.error, borderRadius: t.radius.md, borderWidth: 1, marginTop: t.spacing.sm }]}>
+            <Text style={{ color: t.colors.error, fontWeight: '600', fontSize: 14, textAlign: 'center' }}>{tx('deleteItinerary')}</Text>
           </TouchableOpacity>
         </View>
         <View style={{ height: t.spacing['4xl'] }} />
