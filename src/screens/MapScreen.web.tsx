@@ -3,7 +3,7 @@ import { View, Text, TouchableOpacity, StyleSheet, ActivityIndicator, ScrollView
 import { useTheme } from '../theme';
 import { useAuth } from '../contexts/AuthContext';
 import { useLang } from '../contexts/LanguageContext';
-import { tp } from '../i18n/translations';
+import { tp, td } from '../i18n/translations';
 import { getImageUrl } from '../utils/imageProxy';
 import * as api from '../services';
 
@@ -271,7 +271,12 @@ export function MapScreen({ navigation }: Props) {
             </View>
             <Text style={{ color: t.colors.primary, fontWeight: '600' }}>{selectedPin.distance}</Text>
           </View>
-          <Text style={{ fontSize: 14, color: t.colors.onSurfaceVariant, lineHeight: 20, marginBottom: 8 }}>{tp(lang, selectedPin.description)}</Text>
+          <Text style={{ fontSize: 14, color: t.colors.onSurfaceVariant, lineHeight: 20, marginBottom: 8 }}>
+            {(() => {
+              const dest = destinations.find((d) => d.id === selectedPin.destinationId);
+              return (dest ? td(lang, dest.name)?.desc : null) || tp(lang, selectedPin.description);
+            })()}
+          </Text>
           <Text style={{ color: t.colors.onSurfaceMuted, fontSize: 12, marginBottom: 16 }}>{tp(lang, selectedPin.placeType)}</Text>
           <View style={s.sheetActions}>
             <TouchableOpacity
