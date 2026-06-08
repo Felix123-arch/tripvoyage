@@ -80,25 +80,45 @@ export function MapScreen({ navigation, route }: Props) {
     const { AMap, map } = { AMap: amapRef.current, map: mapInstance.current };
     const route = itineraryRoutes;
 
-    // Collect activity locations in day order
-    const routeLocations: string[] = [];
+    // Collect activities in order (use title as it matches pin names better)
+    const activityNames: string[] = [];
     route.days?.forEach((day: any) => {
       day.activities?.forEach((act: any) => {
-        if (act.location) routeLocations.push(act.location);
+        if (act.title) activityNames.push(act.title);
       });
     });
 
-    // Find matching pins preserving itinerary order
+    // Find matching pins by fuzzy-matching activity title against pin name
     const routePins: api.MapPinData[] = [];
     const used = new Set<string>();
-    for (const loc of routeLocations) {
+    for (const title of activityNames) {
       const found = pins.find((p) =>
-        !used.has(p.id) && (p.name === loc || p.name.includes(loc) || loc.includes(p.name))
+        !used.has(p.id) && (
+          p.name === title ||
+          p.name.includes(title.replace(/^.*? /, '')) ||
+          title.includes(p.name.replace(/ .*$/, '')) ||
+          title.toLowerCase().includes(p.name.split(' ')[0]?.toLowerCase())
+        )
       );
       if (found) {
         routePins.push(found);
         used.add(found.id);
       }
+    }
+    // Fallback: if no matches, try matching by location
+    if (routePins.length < 2) {
+      route.days?.forEach((day: any) => {
+        day.activities?.forEach((act: any) => {
+          if (act.location && routePins.length < 10) {
+            const found = pins.find((p) =>
+              !used.has(p.id) && (
+                p.name.includes(act.location) || act.location.includes(p.name.split(',')[0])
+              )
+            );
+            if (found) { routePins.push(found); used.add(found.id); }
+          }
+        });
+      });
     }
 
     if (routePins.length < 2) return;
