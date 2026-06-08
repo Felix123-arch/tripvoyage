@@ -81,6 +81,29 @@ app.get('/api/v1/images/proxy', async (req, res) => {
   }
 });
 
+// Weather proxy
+app.get('/api/v1/weather', async (req, res) => {
+  try {
+    const city = req.query.city as string;
+    if (!city) { res.status(400).json({ error: 'Missing city' }); return; }
+    const https = await import('https');
+    https.get(`https://wttr.in/${encodeURIComponent(city)}?format=j1`, (wRes: any) => {
+      let data = '';
+      wRes.on('data', (chunk: string) => data += chunk);
+      wRes.on('end', () => {
+        try {
+          const json = JSON.parse(data);
+          const today = json.weather?.[0];
+          res.json({
+            temp: today?.avgtempC ? String(Math.round(Number(today.avgtempC))) : null,
+            condition: today?.hourly?.[4]?.weatherDesc?.[0]?.value || null,
+          });
+        } catch { res.status(502).json({ error: 'Weather parse error' }); }
+      });
+    }).on('error', () => res.status(502).json({ error: 'Weather fetch failed' }));
+  } catch { res.status(500).json({ error: 'Proxy error' }); }
+});
+
 app.use('/api/v1/auth', authRoutes);
 app.use('/api/v1/destinations', destinationRoutes);
 app.use('/api/v1/itineraries', itineraryRoutes);

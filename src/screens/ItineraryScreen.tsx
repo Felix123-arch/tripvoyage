@@ -54,9 +54,23 @@ export function ItineraryScreen({ navigation, route }: Props) {
     setError(null);
     try {
       const list = await api.getItineraries('upcoming');
-      setItineraries(list);
+      // Fetch real weather for each itinerary via backend proxy
+      const withWeather = await Promise.all(
+        list.map(async (it) => {
+          try {
+            const { data } = await (await import('../services/api')).default.get('/weather', { params: { city: it.destination } });
+            if (data.temp) {
+              return { ...it, weatherTemp: data.temp, weatherCond: data.condition, weatherDesc: data.condition };
+            }
+            return it;
+          } catch {
+            return it;
+          }
+        })
+      );
+      setItineraries(withWeather);
     } catch (err: any) {
-      setError(err.response?.data?.error || err.message || 'Failed to load itineraries');
+      setError(err.response?.data?.error || err.message || tx('failedLoadItin'));
     } finally {
       setLoading(false);
     }
@@ -354,7 +368,7 @@ export function ItineraryScreen({ navigation, route }: Props) {
               {itinerary.name}
             </Text>
             <Text style={[s.subtitle, { fontFamily: t.typography.fontFamily, fontSize: t.typography.caption.fontSize, color: t.colors.onSurfaceVariant }]}>
-              {itinerary.startDate} - {itinerary.endDate}, {itinerary.year}
+              {td(lang, itinerary.destination)?.name || itinerary.destination} · {itinerary.startDate} - {itinerary.endDate}
             </Text>
           </View>
           <TouchableOpacity onPress={handleShare}>
