@@ -459,7 +459,17 @@ export function ItineraryScreen({ navigation, route }: Props) {
       <ScrollView style={s.scroll} showsVerticalScrollIndicator={false}>
         <View style={{ paddingHorizontal: t.spacing.lg, marginTop: t.spacing.lg }}>
           <LinearGradient
-            colors={['#2563EB', '#7C3AED']}
+            colors={(() => {
+              const temp = parseInt(itinerary.weatherTemp || '20');
+              if (temp >= 35) return ['#DC2626', '#EA580C'];
+              if (temp >= 30) return ['#EA580C', '#F59E0B'];
+              if (temp >= 25) return ['#F59E0B', '#84CC16'];
+              if (temp >= 20) return ['#10B981', '#06B6D4'];
+              if (temp >= 15) return ['#06B6D4', '#3B82F6'];
+              if (temp >= 10) return ['#3B82F6', '#6366F1'];
+              if (temp >= 5)  return ['#6366F1', '#8B5CF6'];
+              return ['#8B5CF6', '#A78BFA'];
+            })() as unknown as readonly [string, string]}
             start={{ x: 0, y: 0 }} end={{ x: 1, y: 1 }}
             style={[s.weatherWrap, { borderRadius: t.radius.md, padding: t.spacing.lg }]}
           >
