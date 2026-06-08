@@ -125,17 +125,11 @@ export function LoginScreen({ navigation }: Props) {
           <View style={styles.socialSection}>
             <Text style={{ color: theme.colors.onSurfaceMuted, fontSize: 12, marginBottom: 12, textAlign: 'center' }}>{tx('socialLogin')}</Text>
             <View style={styles.socialRow}>
-              <TouchableOpacity style={[styles.socialBtn, { backgroundColor: '#DB4437' }]} onPress={() => handleSocialLogin('Google')}>
-                <Text style={{ color: '#FFF', fontWeight: '600', fontSize: 15 }}>G</Text>
+              <TouchableOpacity style={[styles.socialBtnWide, { backgroundColor: '#07C160' }]} onPress={() => handleSocialLogin('WeChat')}>
+                <Text style={{ color: '#FFF', fontWeight: '700', fontSize: 14 }}>💬 WeChat</Text>
               </TouchableOpacity>
-              <TouchableOpacity style={[styles.socialBtn, { backgroundColor: '#07C160' }]} onPress={() => handleSocialLogin('WeChat')}>
-                <Text style={{ color: '#FFF', fontWeight: '600', fontSize: 15 }}>We</Text>
-              </TouchableOpacity>
-              <TouchableOpacity style={[styles.socialBtn, { backgroundColor: '#1877F2' }]} onPress={() => handleSocialLogin('Facebook')}>
-                <Text style={{ color: '#FFF', fontWeight: '600', fontSize: 15 }}>f</Text>
-              </TouchableOpacity>
-              <TouchableOpacity style={[styles.socialBtn, { backgroundColor: '#000' }]} onPress={() => handleSocialLogin('Apple')}>
-                <Text style={{ color: '#FFF', fontWeight: '600', fontSize: 15 }}></Text>
+              <TouchableOpacity style={[styles.socialBtnWide, { backgroundColor: '#000000' }]} onPress={() => handleSocialLogin('Douyin')}>
+                <Text style={{ color: '#FFF', fontWeight: '700', fontSize: 14 }}>🎵 Douyin</Text>
               </TouchableOpacity>
             </View>
           </View>
@@ -164,7 +158,8 @@ const styles = StyleSheet.create({
   linkBtn: { height: 48, justifyContent: 'center', alignItems: 'center', borderWidth: 1 },
   linkText: { fontSize: 15, fontWeight: '500' },
   socialSection: { marginTop: 16 },
-  socialRow: { flexDirection: 'row', justifyContent: 'center', gap: 16 },
+  socialRow: { flexDirection: 'row', justifyContent: 'center', gap: 12 },
+  socialBtnWide: { flex: 1, height: 44, borderRadius: 22, justifyContent: 'center', alignItems: 'center' },
   socialBtn: { width: 48, height: 48, borderRadius: 24, justifyContent: 'center', alignItems: 'center' },
   skipBtn: { alignItems: 'center', paddingVertical: 12 },
   skipText: { fontSize: 14 },
