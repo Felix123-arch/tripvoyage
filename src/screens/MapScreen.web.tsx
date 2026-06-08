@@ -3,6 +3,7 @@ import { View, Text, TouchableOpacity, StyleSheet, ActivityIndicator, ScrollView
 import { useTheme } from '../theme';
 import { useAuth } from '../contexts/AuthContext';
 import { useLang } from '../contexts/LanguageContext';
+import { tp } from '../i18n/translations';
 import { getImageUrl } from '../utils/imageProxy';
 import * as api from '../services';
 
@@ -37,7 +38,7 @@ const pinColors: Record<string, string> = {
 export function MapScreen({ navigation }: Props) {
   const t = useTheme();
   const { isAuthenticated } = useAuth();
-  const { t: tx } = useLang();
+  const { t: tx, lang } = useLang();
   const [mapLoaded, setMapLoaded] = useState(false);
   const [loadError, setLoadError] = useState<string | null>(null);
   const [pins, setPins] = useState<api.MapPinData[]>([]);
@@ -111,7 +112,7 @@ export function MapScreen({ navigation }: Props) {
     setAddingToItinerary(true);
     try {
       await api.addActivity(itineraryId, dayId, {
-        title: selectedPin.name,
+        title: tp(lang, selectedPin.name),
         type: selectedPin.placeType === 'Restaurant' ? 'dining' :
               selectedPin.placeType === 'Hotel' ? 'hotel' :
               selectedPin.placeType === 'Nature' ? 'sightseeing' :
@@ -261,17 +262,17 @@ export function MapScreen({ navigation }: Props) {
           })()}
           <View style={s.sheetHeader}>
             <View style={{ flex: 1 }}>
-              <Text style={[s.sheetName, { fontWeight: '700', fontSize: 18, color: t.colors.onSurface }]}>{selectedPin.name}</Text>
+              <Text style={[s.sheetName, { fontWeight: '700', fontSize: 18, color: t.colors.onSurface }]}>{tp(lang, selectedPin.name)}</Text>
               <View style={s.sheetMeta}>
                 <Text style={{ color: t.colors.tertiary, fontSize: 15 }}>{'★'.repeat(Math.round(selectedPin.rating))}</Text>
                 <Text style={{ color: t.colors.onSurface, fontWeight: '600' }}>{selectedPin.rating.toFixed(1)}</Text>
-                <Text style={{ color: t.colors.onSurfaceMuted, fontSize: 13 }}>({selectedPin.reviewCount.toLocaleString()} reviews)</Text>
+                <Text style={{ color: t.colors.onSurfaceMuted, fontSize: 13 }}>({selectedPin.reviewCount.toLocaleString()} {tx('reviews')})</Text>
               </View>
             </View>
             <Text style={{ color: t.colors.primary, fontWeight: '600' }}>{selectedPin.distance}</Text>
           </View>
-          <Text style={{ fontSize: 14, color: t.colors.onSurfaceVariant, lineHeight: 20, marginBottom: 8 }}>{selectedPin.description}</Text>
-          <Text style={{ color: t.colors.onSurfaceMuted, fontSize: 12, marginBottom: 16 }}>{selectedPin.placeType}</Text>
+          <Text style={{ fontSize: 14, color: t.colors.onSurfaceVariant, lineHeight: 20, marginBottom: 8 }}>{tp(lang, selectedPin.description)}</Text>
+          <Text style={{ color: t.colors.onSurfaceMuted, fontSize: 12, marginBottom: 16 }}>{tp(lang, selectedPin.placeType)}</Text>
           <View style={s.sheetActions}>
             <TouchableOpacity
               style={[s.addBtn, { backgroundColor: t.colors.primary, borderRadius: t.radius.md }]}

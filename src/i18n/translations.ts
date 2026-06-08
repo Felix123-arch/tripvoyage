@@ -33,6 +33,47 @@ const destData: Record<string, { zhName: string; zhDesc: string }> = {
   'Marrakech, Morocco': { zhName: '摩洛哥马拉喀什', zhDesc: '迷失在迷宫般的麦地那老城集市中，感受北非的色彩、香料与异域风情。' },
 };
 
+// Map pin name/placeType translations
+const pinZh: Record<string, string> = {
+  'Attraction': '景点', 'Hotel': '酒店', 'Restaurant': '餐厅', 'Nature': '自然', 'Shopping': '购物',
+  'Tokyo Tower': '东京塔', 'Senso-ji Temple': '浅草寺', 'Meiji Shrine': '明治神宫',
+  'Shibuya Crossing': '涩谷十字路口', 'Tsukiji Fish Market': '筑地市场', 'Shinjuku Gyoen': '新宿御苑',
+  'Fushimi Inari Shrine': '伏见稻荷大社', 'Kinkaku-ji Golden Pavilion': '金阁寺', 'Arashiyama Bamboo Grove': '岚山竹林',
+  'Eiffel Tower': '埃菲尔铁塔', 'Louvre Museum': '卢浮宫', 'Montmartre & Sacré-Cœur': '蒙马特圣心大教堂',
+  'Ubud Monkey Forest': '乌布猴林', 'Tanah Lot Temple': '海神庙', 'Tegallalang Rice Terraces': '德格拉朗梯田',
+  'Matterhorn Glacier Paradise': '马特洪峰冰川天堂', 'Interlaken': '因特拉肯', 'Jungfraujoch': '少女峰',
+  'Oia Sunset Spot': '伊亚日落观景台', 'Red Beach': '红沙滩', 'Ancient Thira': '古锡拉遗址',
+  'Central Park': '中央公园', 'Times Square': '时代广场', 'Statue of Liberty': '自由女神像',
+  'Forbidden City': '故宫', 'Great Wall at Mutianyu': '慕田峪长城', 'Summer Palace': '颐和园',
+  'The Bund': '外滩', 'Oriental Pearl Tower': '东方明珠塔', 'Yu Garden': '豫园',
+  'Machu Picchu Citadel': '马丘比丘古城', 'Huayna Picchu': '华纳比丘', 'Sacred Valley': '圣谷',
+  'Kurumba Maldives': '库鲁巴马尔代夫', 'Male Fish Market': '马累鱼市', 'Banana Reef': '香蕉礁',
+  'Sagrada Familia': '圣家堂', 'Park Güell': '桂尔公园', 'La Boqueria Market': '波盖利亚市场',
+  'Milford Sound': '米尔福德峡湾', 'Bungee Kawarau Bridge': '卡瓦劳蹦极大桥', 'Lake Wakatipu': '瓦卡蒂普湖',
+  'Burj Khalifa': '哈利法塔', 'Dubai Mall': '迪拜购物中心', 'Palm Jumeirah': '朱美拉棕榈岛',
+  'Colosseum': '罗马斗兽场', 'Vatican City': '梵蒂冈', 'Trevi Fountain': '特雷维喷泉',
+  'Christ the Redeemer': '基督像', 'Copacabana Beach': '科帕卡巴纳海滩', 'Sugarloaf Mountain': '糖面包山',
+  'Anne Frank House': '安妮弗兰克故居', 'Van Gogh Museum': '梵高博物馆', 'Rijksmuseum': '国立博物馆',
+  'Lake Louise': '露易丝湖', 'Moraine Lake': '梦莲湖', 'Banff Gondola': '班夫缆车',
+  'Phi Phi Islands': '皮皮岛', 'Big Buddha Phuket': '普吉大佛', 'Patong Beach': '芭东海滩',
+  'Hagia Sophia': '圣索菲亚大教堂', 'Blue Mosque': '蓝色清真寺', 'Grand Bazaar': '大巴扎',
+  'Sydney Opera House': '悉尼歌剧院', 'Bondi Beach': '邦迪海滩', 'Harbour Bridge': '海港大桥',
+  'Blue Lagoon': '蓝湖', 'Golden Circle': '黄金圈', 'Northern Lights Base': '北极光观测站',
+  'Giant Panda Base': '大熊猫基地', 'Jinli Ancient Street': '锦里古街', 'Wuhou Shrine': '武侯祠',
+  'Jemaa el-Fna': '杰马夫纳广场', 'Bahia Palace': '巴伊亚宫', 'Majorelle Garden': '马约尔花园',
+  'Scenic Spot': '风景名胜', 'Downtown Hub': '市中心', 'Luxury Stay': '豪华住宿',
+  'Boutique Hotel': '精品酒店', 'Local Cuisine': '本地美食', 'Sushi Master': '寿司大师',
+  'Kaiseki Dining': '怀石料理', 'Street Food Paradise': '街头美食天堂', 'Beach Resort': '沙滩度假村',
+  'Overwater Villa': '水上别墅', 'Ski Lodge': '滑雪小屋', 'Mountain Retreat': '山间度假',
+  'Spa Sanctuary': '温泉圣地', 'Designer District': '设计师区', 'Night Market': '夜市',
+  'Electronics Market': '电器市场', 'Traditional Crafts Market': '传统工艺品市场',
+};
+
+export const tp = (lang: Lang, text: string): string => {
+  if (lang === 'en') return text;
+  return pinZh[text] || text;
+};
+
 export const td = (lang: Lang, name: string): { name: string; desc: string } | null => {
   if (lang === 'en') return null;
   const d = destData[name];
