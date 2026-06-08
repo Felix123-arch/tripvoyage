@@ -1,4 +1,4 @@
-export const colors = {
+export const lightColors = {
   primary: '#2563EB',
   primaryHover: '#1D4ED8',
   primaryContainer: '#DBEAFE',
@@ -28,6 +28,39 @@ export const colors = {
   outline: '#E2E8F0',
   outlineVariant: '#F1F5F9',
 } as const;
+
+export const darkColors = {
+  primary: '#3B82F6',
+  primaryHover: '#60A5FA',
+  primaryContainer: '#1E3A5F',
+  onPrimaryContainer: '#93C5FD',
+  onPrimary: '#FFFFFF',
+
+  secondary: '#10B981',
+  secondaryContainer: '#064E3B',
+  onSecondaryContainer: '#6EE7B7',
+
+  tertiary: '#F59E0B',
+  tertiaryContainer: '#78350F',
+  onTertiaryContainer: '#FCD34D',
+
+  error: '#EF4444',
+  errorContainer: '#7F1D1D',
+
+  surface: '#1E293B',
+  surfaceVariant: '#1E293B',
+  surfaceContainer: '#0F172A',
+  background: '#0F172A',
+
+  onSurface: '#F1F5F9',
+  onSurfaceVariant: '#94A3B8',
+  onSurfaceMuted: '#64748B',
+
+  outline: '#334155',
+  outlineVariant: '#1E293B',
+} as const;
+
+export const colors = lightColors;
 
 export const typography = {
   fontFamily: 'Inter',

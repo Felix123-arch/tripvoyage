@@ -1,3 +1,3 @@
 export { colors, typography, spacing, radius, elevation, animation, touchMin } from './tokens';
-export { useTheme, theme } from './ThemeContext';
+export { useTheme, useThemeActions, ThemeProvider } from './ThemeContext';
 export type { Theme } from './ThemeContext';

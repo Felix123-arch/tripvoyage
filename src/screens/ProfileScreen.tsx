@@ -1,7 +1,7 @@
 import { View, Text, ScrollView, StyleSheet, Alert, Modal, TouchableOpacity } from 'react-native';
 import { useState } from 'react';
 import { LinearGradient } from 'expo-linear-gradient';
-import { useTheme } from '../theme';
+import { useTheme, useThemeActions } from '../theme';
 import { Tag, BudgetSelector, Toggle, Button } from '../components';
 import { useAuth } from '../contexts/AuthContext';
 import { useLang } from '../contexts/LanguageContext';
@@ -29,6 +29,7 @@ export function ProfileScreen({ navigation }: Props) {
   const t = useTheme();
   const { user, logout, updateProfile } = useAuth();
   const { lang, setLang, t: tx } = useLang();
+  const { setDarkMode } = useThemeActions();
 
   const [preferences, setPreferences] = useState<string[]>(
     (user?.preferences || []).map((p: any) => typeof p === 'string' ? p : p.preference)
@@ -69,6 +70,7 @@ export function ProfileScreen({ navigation }: Props) {
     setSettings((s) => {
       const next = { ...s, [key]: !s[key] };
       handleUpdate({ [key]: next[key] });
+      if (key === 'darkMode') setDarkMode(next[key]);
       return next;
     });
   };

@@ -14,8 +14,8 @@ interface Props {
 
 const ACTIVITY_TYPES = ['sightseeing', 'dining', 'transport', 'hotel', 'shopping', 'other'];
 const ACTIVITY_LABELS: Record<string, string> = {
-  sightseeing: '🏛 Sightseeing', dining: '🍽 Dining', transport: '🚗 Transport',
-  hotel: '🏨 Hotel', shopping: '🛍 Shopping', other: '📌 Other',
+  sightseeing: '🏛', dining: '🍽', transport: '🚗',
+  hotel: '🏨', shopping: '🛍', other: '📌',
 };
 
 export function ItineraryScreen({ navigation, route }: Props) {
@@ -281,51 +281,51 @@ export function ItineraryScreen({ navigation, route }: Props) {
         <ScrollView style={{ flex: 1 }} contentContainerStyle={{ flexGrow: 1, justifyContent: 'center', padding: 20 }}>
           <View style={[s.modalContent, { backgroundColor: t.colors.surface, borderRadius: t.radius.lg }]}>
             <Text style={[s.modalTitle, { fontFamily: t.typography.fontFamily, fontWeight: '700', fontSize: 20, color: t.colors.onSurface }]}>
-              Add Activity
+              {tx('addActivityTitle')}
             </Text>
-            <TextInput placeholder="Activity title" value={actTitle} onChangeText={setActTitle}
+            <TextInput placeholder={tx('activityTitle')} value={actTitle} onChangeText={setActTitle}
               style={[s.input, { fontFamily: t.typography.fontFamily, borderColor: t.colors.outline, borderRadius: t.radius.sm, color: t.colors.onSurface }]}
               placeholderTextColor={t.colors.onSurfaceMuted} />
-            <Text style={[s.inputLabel, { color: t.colors.onSurfaceMuted }]}>Type</Text>
+            <Text style={[s.inputLabel, { color: t.colors.onSurfaceMuted }]}>{tx('type')}</Text>
             <ScrollView horizontal showsHorizontalScrollIndicator={false} style={{ marginBottom: 12 }}>
               {ACTIVITY_TYPES.map((type) => (
                 <TouchableOpacity key={type} onPress={() => setActType(type)}
                   style={[s.typeChip, { backgroundColor: actType === type ? t.colors.primary : t.colors.surface, borderColor: t.colors.outline, borderWidth: actType === type ? 0 : 1, borderRadius: t.radius.full, marginRight: 8 }]}>
                   <Text style={{ color: actType === type ? '#FFF' : t.colors.onSurface, fontSize: 13, fontWeight: '500' }}>
-                    {ACTIVITY_LABELS[type]}
+                    {ACTIVITY_LABELS[type]} {tx(type)}
                   </Text>
                 </TouchableOpacity>
               ))}
             </ScrollView>
             <View style={s.dateRow}>
               <View style={{ flex: 1 }}>
-                <Text style={[s.inputLabel, { color: t.colors.onSurfaceMuted }]}>Day #</Text>
+                <Text style={[s.inputLabel, { color: t.colors.onSurfaceMuted }]}>{tx('day')}</Text>
                 <TextInput value={String(actDayNum)} onChangeText={(v) => setActDayNum(Number(v) || 1)} keyboardType="numeric"
                   style={[s.input, { fontFamily: t.typography.fontFamily, borderColor: t.colors.outline, borderRadius: t.radius.sm, color: t.colors.onSurface }]}
                   placeholderTextColor={t.colors.onSurfaceMuted} />
               </View>
               <View style={{ flex: 1 }}>
-                <Text style={[s.inputLabel, { color: t.colors.onSurfaceMuted }]}>Time</Text>
-                <TextInput placeholder="e.g. 10:00 AM" value={actTime} onChangeText={setActTime}
+                <Text style={[s.inputLabel, { color: t.colors.onSurfaceMuted }]}>{tx('time')}</Text>
+                <TextInput placeholder="10:00 AM" value={actTime} onChangeText={setActTime}
                   style={[s.input, { fontFamily: t.typography.fontFamily, borderColor: t.colors.outline, borderRadius: t.radius.sm, color: t.colors.onSurface }]}
                   placeholderTextColor={t.colors.onSurfaceMuted} />
               </View>
             </View>
-            <TextInput placeholder="Location" value={actLocation} onChangeText={setActLocation}
+            <TextInput placeholder={tx('location')} value={actLocation} onChangeText={setActLocation}
               style={[s.input, { fontFamily: t.typography.fontFamily, borderColor: t.colors.outline, borderRadius: t.radius.sm, color: t.colors.onSurface }]}
               placeholderTextColor={t.colors.onSurfaceMuted} />
-            <TextInput placeholder="Description (optional)" value={actDesc} onChangeText={setActDesc} multiline
+            <TextInput placeholder={tx('description')} value={actDesc} onChangeText={setActDesc} multiline
               style={[s.input, s.textArea, { fontFamily: t.typography.fontFamily, borderColor: t.colors.outline, borderRadius: t.radius.sm, color: t.colors.onSurface }]}
               placeholderTextColor={t.colors.onSurfaceMuted} />
             {activityError && <Text style={{ color: t.colors.error, fontSize: 13, marginBottom: 8 }}>{activityError}</Text>}
             <View style={s.modalBtns}>
               <TouchableOpacity onPress={() => { setShowAddActivity(false); setActivityError(null); }}
                 style={[s.modalBtn, { borderColor: t.colors.outline, borderRadius: t.radius.sm, borderWidth: 1 }]}>
-                <Text style={{ color: t.colors.onSurface, fontWeight: '500' }}>Cancel</Text>
+                <Text style={{ color: t.colors.onSurface, fontWeight: '500' }}>{tx('cancel')}</Text>
               </TouchableOpacity>
               <TouchableOpacity onPress={handleAddActivity} disabled={addingActivity}
                 style={[s.modalBtn, { backgroundColor: t.colors.primary, borderRadius: t.radius.sm }]}>
-                <Text style={{ color: '#FFF', fontWeight: '600' }}>{addingActivity ? 'Adding...' : 'Add'}</Text>
+                <Text style={{ color: '#FFF', fontWeight: '600' }}>{addingActivity ? tx('adding') : tx('add')}</Text>
               </TouchableOpacity>
             </View>
           </View>

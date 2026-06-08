@@ -6,7 +6,8 @@ import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import { HomeScreen, ItineraryScreen, MapScreen, SavedScreen, ProfileScreen, GuidesScreen, LoginScreen, RegisterScreen, QuestionnaireScreen, DestinationDetailScreen } from './src/screens';
 import { AuthProvider, useAuth } from './src/contexts/AuthContext';
 import { LanguageProvider, useLang } from './src/contexts/LanguageContext';
-import { colors, typography } from './src/theme';
+import { ThemeProvider, useThemeActions } from './src/theme';
+import { typography } from './src/theme';
 
 const Tab = createBottomTabNavigator();
 const Stack = createNativeStackNavigator();
@@ -21,20 +22,22 @@ function TabIcon({ emoji, focused }: { emoji: string; focused: boolean }) {
 
 function HomeTabs() {
   const { t } = useLang();
+  const theme = useThemeActions();
+  const c = theme.theme.colors;
   return (
     <Tab.Navigator
       screenOptions={{
         headerShown: false,
         tabBarStyle: {
-          backgroundColor: colors.surface,
-          borderTopColor: colors.outline,
+          backgroundColor: c.surface,
+          borderTopColor: c.outline,
           borderTopWidth: 1,
           height: 56,
           paddingBottom: 4,
           paddingTop: 6,
         },
-        tabBarActiveTintColor: colors.primary,
-        tabBarInactiveTintColor: colors.onSurfaceMuted,
+        tabBarActiveTintColor: c.primary,
+        tabBarInactiveTintColor: c.onSurfaceMuted,
         tabBarLabelStyle: {
           fontFamily: typography.fontFamily,
           fontSize: typography.caption.fontSize,
@@ -58,11 +61,13 @@ function HomeTabs() {
 
 function AuthGate() {
   const { isAuthenticated, isLoading, isGuest } = useAuth();
+  const theme = useThemeActions();
+  const c = theme.theme.colors;
 
   if (isLoading) {
     return (
-      <View style={[tabStyles.container, { backgroundColor: colors.background }]}>
-        <ActivityIndicator size="large" color={colors.primary} />
+      <View style={[tabStyles.container, { backgroundColor: c.background }]}>
+        <ActivityIndicator size="large" color={c.primary} />
       </View>
     );
   }
@@ -96,14 +101,16 @@ function AuthGate() {
 
 export default function App() {
   return (
-    <AuthProvider>
-      <LanguageProvider>
-        <NavigationContainer>
-          <AuthGate />
-          <StatusBar style="dark" />
-        </NavigationContainer>
-      </LanguageProvider>
-    </AuthProvider>
+    <ThemeProvider>
+      <AuthProvider>
+        <LanguageProvider>
+          <NavigationContainer>
+            <AuthGate />
+            <StatusBar style="dark" />
+          </NavigationContainer>
+        </LanguageProvider>
+      </AuthProvider>
+    </ThemeProvider>
   );
 }
 
