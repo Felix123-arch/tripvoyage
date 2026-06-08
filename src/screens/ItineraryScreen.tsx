@@ -242,19 +242,19 @@ export function ItineraryScreen({ navigation, route }: Props) {
       <View style={[s.modalOverlay, { backgroundColor: 'rgba(0,0,0,0.5)' }]}>
         <View style={[s.modalContent, { backgroundColor: t.colors.surface, borderRadius: t.radius.lg }]}>
           <Text style={[s.modalTitle, { fontFamily: t.typography.fontFamily, fontWeight: '700', fontSize: 20, color: t.colors.onSurface }]}>
-            Create New Itinerary
+            {tx('createTripTitle')}
           </Text>
-          <TextInput placeholder="Trip name (e.g. Summer Adventure)" value={newName} onChangeText={setNewName}
+          <TextInput placeholder={tx('tripName')} value={newName} onChangeText={setNewName}
             style={[s.input, { fontFamily: t.typography.fontFamily, borderColor: t.colors.outline, borderRadius: t.radius.sm, color: t.colors.onSurface }]}
             placeholderTextColor={t.colors.onSurfaceMuted} />
-          <TextInput placeholder="Destination (e.g. Tokyo, Japan)" value={newDestination} onChangeText={setNewDestination}
+          <TextInput placeholder={tx('destination')} value={newDestination} onChangeText={setNewDestination}
             style={[s.input, { fontFamily: t.typography.fontFamily, borderColor: t.colors.outline, borderRadius: t.radius.sm, color: t.colors.onSurface }]}
             placeholderTextColor={t.colors.onSurfaceMuted} />
           <View style={s.dateRow}>
-            <TextInput placeholder="Start (YYYY-MM-DD)" value={newStartDate} onChangeText={setNewStartDate}
+            <TextInput placeholder={tx('startDate')} value={newStartDate} onChangeText={setNewStartDate}
               style={[s.input, s.dateInput, { fontFamily: t.typography.fontFamily, borderColor: t.colors.outline, borderRadius: t.radius.sm, color: t.colors.onSurface }]}
               placeholderTextColor={t.colors.onSurfaceMuted} />
-            <TextInput placeholder="End (YYYY-MM-DD)" value={newEndDate} onChangeText={setNewEndDate}
+            <TextInput placeholder={tx('endDate')} value={newEndDate} onChangeText={setNewEndDate}
               style={[s.input, s.dateInput, { fontFamily: t.typography.fontFamily, borderColor: t.colors.outline, borderRadius: t.radius.sm, color: t.colors.onSurface }]}
               placeholderTextColor={t.colors.onSurfaceMuted} />
           </View>
@@ -262,11 +262,11 @@ export function ItineraryScreen({ navigation, route }: Props) {
           <View style={s.modalBtns}>
             <TouchableOpacity onPress={() => { setShowCreate(false); setCreateError(null); }}
               style={[s.modalBtn, { borderColor: t.colors.outline, borderRadius: t.radius.sm, borderWidth: 1 }]}>
-              <Text style={{ color: t.colors.onSurface, fontWeight: '500' }}>Cancel</Text>
+              <Text style={{ color: t.colors.onSurface, fontWeight: '500' }}>{tx('cancel')}</Text>
             </TouchableOpacity>
             <TouchableOpacity onPress={handleCreate} disabled={creating}
               style={[s.modalBtn, { backgroundColor: t.colors.primary, borderRadius: t.radius.sm }]}>
-              <Text style={{ color: '#FFF', fontWeight: '600' }}>{creating ? 'Creating...' : 'Create'}</Text>
+              <Text style={{ color: '#FFF', fontWeight: '600' }}>{creating ? tx('creating') : tx('create')}</Text>
             </TouchableOpacity>
           </View>
         </View>
