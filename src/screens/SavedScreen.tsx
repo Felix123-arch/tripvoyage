@@ -75,8 +75,14 @@ export function SavedScreen({ navigation }: Props) {
   };
 
   const handleTripPress = (trip: api.Itinerary) => {
-    // Navigate to itinerary detail - just go to Itinerary tab
-    navigation.navigate('Main', { screen: 'Itinerary' });
+    const destName = td(lang, trip.destination)?.name || trip.destination;
+    const days = trip.days?.length || 0;
+    const activities = trip.days?.reduce((sum: number, d: any) => sum + (d.activities?.length || 0), 0) || 0;
+    Alert.alert(
+      destName,
+      `${trip.startDate} - ${trip.endDate} (${trip.year})\n${days} ${tx('day')} · ${activities} ${tx('addActivity')}\n${tx('status')}: ${tx(trip.status)}`,
+      [{ text: tx('close'), style: 'default' }]
+    );
   };
 
   // Filter trips by year and region
@@ -179,13 +185,15 @@ export function SavedScreen({ navigation }: Props) {
                   <Text style={[s.sectionTitle, { fontWeight: '600', fontSize: t.typography.headline.fontSize, color: t.colors.onSurface, marginTop: t.spacing['2xl'], paddingHorizontal: t.spacing.lg }]}>
                     {tx('memoryGallery')}
                   </Text>
-                  <TouchableOpacity>
+                  <TouchableOpacity onPress={() => setTab(0)}>
                     <Text style={{ fontSize: t.typography.bodySm.fontSize, color: t.colors.primary, paddingHorizontal: t.spacing.lg, marginTop: 2 }}>
                       {tx('viewAll')}
                     </Text>
                   </TouchableOpacity>
                   <View style={{ paddingHorizontal: t.spacing.lg, marginTop: t.spacing.md }}>
-                    <GalleryGrid items={memoryItems} />
+                    <TouchableOpacity onPress={() => setTab(0)}>
+                      <GalleryGrid items={memoryItems} />
+                    </TouchableOpacity>
                   </View>
                 </>
               )}
