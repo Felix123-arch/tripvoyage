@@ -22,6 +22,8 @@ const app = express();
 app.use(cors({ origin: true, credentials: true }));
 app.use(express.json());
 app.use('/images', express.static(path.join(process.cwd(), 'public', 'images')));
+// Serve frontend static files
+app.use(express.static(path.join(process.cwd(), 'public', 'frontend')));
 app.use(rateLimit({ windowMs: 15 * 60 * 1000, max: 500, standardHeaders: true, legacyHeaders: false }));
 
 // Image proxy with disk cache — server fetches and caches images
@@ -131,6 +133,11 @@ app.get('/api/v1/debug', async (_req, res) => {
   } catch (err: any) {
     res.status(500).json({ db: 'error', message: err.message, code: err.code, meta: err.meta });
   }
+});
+
+// SPA fallback — serve index.html for non-API routes
+app.get(/^\/(?!api\/).*/, (_req, res) => {
+  res.sendFile(path.join(process.cwd(), 'public', 'frontend', 'index.html'));
 });
 
 app.use(errorHandler);
