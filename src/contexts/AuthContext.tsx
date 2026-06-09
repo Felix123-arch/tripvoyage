@@ -112,7 +112,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   }, []);
 
   const skipLogin = useCallback(() => {
-    setState({ user: null, token: null, isLoading: false, isAuthenticated: false, isGuest: true });
+    setState({ user: { id: 'guest', email: 'guest@tripvoyage.app', displayName: 'Guest', initials: 'G', budgetLevel: '$$', language: 'English', currency: 'USD ($)', flightAlerts: false, itineraryReminders: false, darkMode: false }, token: null, isLoading: false, isAuthenticated: true, isGuest: true });
   }, []);
 
   return (

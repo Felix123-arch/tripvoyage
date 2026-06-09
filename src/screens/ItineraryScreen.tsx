@@ -22,7 +22,7 @@ const ACTIVITY_LABELS: Record<string, string> = {
 
 export function ItineraryScreen({ navigation, route }: Props) {
   const t = useTheme();
-  const { isAuthenticated } = useAuth();
+  const { isAuthenticated, isGuest } = useAuth();
   const { t: tx, lang } = useLang();
   const [itineraries, setItineraries] = useState<api.Itinerary[]>([]);
   const [activeIndex, setActiveIndex] = useState(0);
@@ -309,7 +309,7 @@ export function ItineraryScreen({ navigation, route }: Props) {
     setShowCreate(true);
   };
 
-  if (!isAuthenticated) {
+  if (!isAuthenticated && !isGuest) {
     return (
       <EmptyState icon="🔒" title={tx('loginTitle')} message={tx('loginToView')} />
     );
