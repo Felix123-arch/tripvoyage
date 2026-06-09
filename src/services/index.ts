@@ -1,4 +1,4 @@
-export { default as api, setAuthToken, setOnAuthError } from './api';
+export { default as api, setAuthToken, setOnAuthError, setGuestMode } from './api';
 export * from './auth';
 export * from './destinations';
 export * from './itineraries';

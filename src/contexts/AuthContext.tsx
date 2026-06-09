@@ -1,6 +1,6 @@
 import React, { createContext, useContext, useState, useEffect, useCallback } from 'react';
 import * as authService from '../services/auth';
-import { setAuthToken, setOnAuthError } from '../services/api';
+import { setAuthToken, setOnAuthError, setGuestMode } from '../services/api';
 import { getItem, setItem, removeItem } from '../utils/storage';
 
 interface UserProfile {
@@ -112,6 +112,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   }, []);
 
   const skipLogin = useCallback(() => {
+    setGuestMode(true);
     setState({ user: { id: 'guest', email: 'guest@tripvoyage.app', displayName: 'Guest', initials: 'G', budgetLevel: '$$', language: 'English', currency: 'USD ($)', flightAlerts: false, itineraryReminders: false, darkMode: false }, token: null, isLoading: false, isAuthenticated: true, isGuest: true });
   }, []);
 
