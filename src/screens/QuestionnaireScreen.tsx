@@ -1,5 +1,5 @@
-import React, { useState } from 'react';
-import { View, Text, ScrollView, TouchableOpacity, TextInput, StyleSheet, Alert } from 'react-native';
+import React, { useState, useRef } from 'react';
+import { View, Text, ScrollView, TouchableOpacity, TextInput, StyleSheet, Alert, Platform } from 'react-native';
 import { useTheme } from '../theme';
 import { useAuth } from '../contexts/AuthContext';
 import { useLang } from '../contexts/LanguageContext';
@@ -99,6 +99,9 @@ export function QuestionnaireScreen({ navigation }: Props) {
   const [answers, setAnswers] = useState<Record<string, string>>({});
   const [submitting, setSubmitting] = useState(false);
   const [submitted, setSubmitted] = useState(false);
+  const [showErrors, setShowErrors] = useState(false);
+  const scrollRef = useRef<ScrollView>(null);
+  const questionRefs = useRef<Record<string, any>>({});
 
   const allQuestions = sections.flatMap((s) => s.questions);
   const answeredCount = allQuestions.filter((q) => answers[q.id]).length;
@@ -106,12 +109,18 @@ export function QuestionnaireScreen({ navigation }: Props) {
 
   const setAnswer = (qId: string, value: string) => {
     setAnswers((prev) => ({ ...prev, [qId]: value }));
+    setShowErrors(false);
   };
 
   const handleSubmit = async () => {
     const unanswered = allQuestions.filter((q) => !answers[q.id]);
     if (unanswered.length > 0) {
-      Alert.alert(tx('q_incomplete'), tx('q_remaining') + ' (' + unanswered.length + ')');
+      setShowErrors(true);
+      // Scroll to first unanswered question
+      const firstId = unanswered[0].id;
+      if (Platform.OS === 'web' && (questionRefs.current as any)[firstId]) {
+        (questionRefs.current as any)[firstId].scrollIntoView({ behavior: 'smooth', block: 'center' });
+      }
       return;
     }
     setSubmitting(true);
@@ -159,14 +168,25 @@ export function QuestionnaireScreen({ navigation }: Props) {
         <Text style={{ color: t.colors.onSurfaceMuted, fontSize: 12, marginTop: 4 }}>{answeredCount} / {allQuestions.length}</Text>
       </View>
 
-      <ScrollView style={st.scroll} showsVerticalScrollIndicator={false}>
+      {showErrors && (
+        <View style={{ marginHorizontal: t.spacing.lg, marginTop: t.spacing.sm, padding: 10, backgroundColor: t.colors.errorContainer, borderRadius: t.radius.sm }}>
+          <Text style={{ color: t.colors.error, fontSize: 13, textAlign: 'center' }}>
+            {tx('q_incomplete')} ({allQuestions.filter((q) => !answers[q.id]).length} {tx('q_remaining')})
+          </Text>
+        </View>
+      )}
+      <ScrollView ref={scrollRef} style={st.scroll} showsVerticalScrollIndicator={false}>
         {sections.map((section) => (
           <View key={section.title} style={{ paddingHorizontal: t.spacing.lg, marginTop: t.spacing.xl }}>
             <Text style={[st.sectionTitle, { fontWeight: '600', fontSize: 15, color: t.colors.primary, marginBottom: t.spacing.md }]}>
               {tx(section.title)}
             </Text>
-            {section.questions.map((q) => (
-              <View key={q.id} style={[st.questionCard, { backgroundColor: t.colors.surface, borderColor: t.colors.outline, borderRadius: t.radius.md, borderWidth: 1, padding: t.spacing.md, marginBottom: t.spacing.sm }]}>
+            {section.questions.map((q) => {
+              const isUnanswered = showErrors && !answers[q.id];
+              return (
+              <View key={q.id}
+                ref={(el) => { (questionRefs.current as any)[q.id] = el; }}
+                style={[st.questionCard, { backgroundColor: t.colors.surface, borderColor: isUnanswered ? t.colors.error : t.colors.outline, borderRadius: t.radius.md, borderWidth: isUnanswered ? 2 : 1, padding: t.spacing.md, marginBottom: t.spacing.sm }]}>
                 <Text style={{ fontWeight: '500', fontSize: 14, color: t.colors.onSurface, marginBottom: 8 }}>{tx(q.text)}</Text>
                 {q.type === 'likert' && (
                   <View style={st.likertRow}>
@@ -203,7 +223,8 @@ export function QuestionnaireScreen({ navigation }: Props) {
                   />
                 )}
               </View>
-            ))}
+            );
+            })}
           </View>
         ))}
         <View style={{ paddingHorizontal: t.spacing.lg, marginTop: t.spacing.xl, marginBottom: 40 }}>
