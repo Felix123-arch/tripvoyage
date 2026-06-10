@@ -39,6 +39,7 @@ export function ItineraryScreen({ navigation, route }: Props) {
   const [newEndDate, setNewEndDate] = useState('');
   const [creating, setCreating] = useState(false);
   const [createError, setCreateError] = useState<string | null>(null);
+  const [createFields, setCreateFields] = useState<Record<string, string>>({});
 
   // Edit itinerary modal
   const [showEdit, setShowEdit] = useState(false);
@@ -47,6 +48,7 @@ export function ItineraryScreen({ navigation, route }: Props) {
   const [editEndDate, setEditEndDate] = useState('');
   const [editing, setEditing] = useState(false);
   const [editError, setEditError] = useState<string | null>(null);
+  const [editFields, setEditFields] = useState<Record<string, string>>({});
 
   // Add activity modal
   const [showAddActivity, setShowAddActivity] = useState(false);
@@ -144,10 +146,13 @@ export function ItineraryScreen({ navigation, route }: Props) {
   }, [route?.params?.addDestination, lang]);
 
   const handleCreate = async () => {
-    if (!newName.trim() || !newDestination.trim() || !newStartDate || !newEndDate) {
-      setCreateError(tx('fillAllFields'));
-      return;
-    }
+    const f: Record<string, string> = {};
+    if (!newName.trim()) f.name = tx('fieldRequired');
+    if (!newDestination.trim()) f.dest = tx('fieldRequired');
+    if (!newStartDate) f.start = tx('fieldRequired');
+    if (!newEndDate) f.end = tx('fieldRequired');
+    if (Object.keys(f).length > 0) { setCreateFields(f); return; }
+    setCreateFields({});
     setCreating(true);
     setCreateError(null);
     try {
@@ -233,7 +238,11 @@ export function ItineraryScreen({ navigation, route }: Props) {
 
   const handleSaveEdit = async () => {
     const it = itineraries[activeIndex];
-    if (!it || !editName.trim()) return;
+    if (!it) return;
+    const f: Record<string, string> = {};
+    if (!editName.trim()) f.name = tx('fieldRequired');
+    if (Object.keys(f).length > 0) { setEditFields(f); return; }
+    setEditFields({});
     setEditing(true);
     setEditError(null);
     try {
@@ -362,23 +371,26 @@ export function ItineraryScreen({ navigation, route }: Props) {
           <Text style={[s.modalTitle, { fontFamily: t.typography.fontFamily, fontWeight: '700', fontSize: 20, color: t.colors.onSurface }]}>
             {tx('createTripTitle')}
           </Text>
-          <TextInput placeholder={tx('tripName')} value={newName} onChangeText={setNewName}
-            style={[s.input, { fontFamily: t.typography.fontFamily, borderColor: t.colors.outline, borderRadius: t.radius.sm, color: t.colors.onSurface }]}
+          <TextInput placeholder={tx('tripName')} value={newName} onChangeText={(v) => { setNewName(v); setCreateFields({}); }}
+            style={[s.input, { fontFamily: t.typography.fontFamily, borderColor: createFields.name ? t.colors.error : t.colors.outline, borderRadius: t.radius.sm, color: t.colors.onSurface }]}
             placeholderTextColor={t.colors.onSurfaceMuted} />
-          <TextInput placeholder={tx('destination')} value={newDestination} onChangeText={setNewDestination}
-            style={[s.input, { fontFamily: t.typography.fontFamily, borderColor: t.colors.outline, borderRadius: t.radius.sm, color: t.colors.onSurface }]}
+          {createFields.name ? <Text style={{ color: t.colors.error, fontSize: 11, marginTop: -6 }}>{createFields.name}</Text> : null}
+          <TextInput placeholder={tx('destination')} value={newDestination} onChangeText={(v) => { setNewDestination(v); setCreateFields({}); }}
+            style={[s.input, { fontFamily: t.typography.fontFamily, borderColor: createFields.dest ? t.colors.error : t.colors.outline, borderRadius: t.radius.sm, color: t.colors.onSurface }]}
             placeholderTextColor={t.colors.onSurfaceMuted} />
+          {createFields.dest ? <Text style={{ color: t.colors.error, fontSize: 11, marginTop: -6 }}>{createFields.dest}</Text> : null}
           <View style={s.dateRow}>
-            <TextInput placeholder={tx('startDate')} value={newStartDate} onChangeText={setNewStartDate}
-              style={[s.input, s.dateInput, { fontFamily: t.typography.fontFamily, borderColor: t.colors.outline, borderRadius: t.radius.sm, color: t.colors.onSurface }]}
+            <TextInput placeholder={tx('startDate')} value={newStartDate} onChangeText={(v) => { setNewStartDate(v); setCreateFields({}); }}
+              style={[s.input, s.dateInput, { fontFamily: t.typography.fontFamily, borderColor: createFields.start ? t.colors.error : t.colors.outline, borderRadius: t.radius.sm, color: t.colors.onSurface }]}
               placeholderTextColor={t.colors.onSurfaceMuted} />
-            <TextInput placeholder={tx('endDate')} value={newEndDate} onChangeText={setNewEndDate}
-              style={[s.input, s.dateInput, { fontFamily: t.typography.fontFamily, borderColor: t.colors.outline, borderRadius: t.radius.sm, color: t.colors.onSurface }]}
+            <TextInput placeholder={tx('endDate')} value={newEndDate} onChangeText={(v) => { setNewEndDate(v); setCreateFields({}); }}
+              style={[s.input, s.dateInput, { fontFamily: t.typography.fontFamily, borderColor: createFields.end ? t.colors.error : t.colors.outline, borderRadius: t.radius.sm, color: t.colors.onSurface }]}
               placeholderTextColor={t.colors.onSurfaceMuted} />
           </View>
+          {(createFields.start || createFields.end) ? <Text style={{ color: t.colors.error, fontSize: 11, marginTop: -6 }}>{createFields.start || createFields.end}</Text> : null}
           {createError && <Text style={{ color: t.colors.error, fontSize: 13, marginBottom: 8 }}>{createError}</Text>}
           <View style={s.modalBtns}>
-            <TouchableOpacity onPress={() => { setShowCreate(false); setCreateError(null); }}
+            <TouchableOpacity onPress={() => { setShowCreate(false); setCreateError(null); setCreateFields({}); }}
               style={[s.modalBtn, { borderColor: t.colors.outline, borderRadius: t.radius.sm, borderWidth: 1 }]}>
               <Text style={{ color: t.colors.onSurface, fontWeight: '500' }}>{tx('cancel')}</Text>
             </TouchableOpacity>
@@ -586,9 +598,10 @@ export function ItineraryScreen({ navigation, route }: Props) {
             <Text style={[s.modalTitle, { fontFamily: t.typography.fontFamily, fontWeight: '700', fontSize: 20, color: t.colors.onSurface }]}>
               {tx('editItinerary')}
             </Text>
-            <TextInput placeholder={tx('tripName')} value={editName} onChangeText={setEditName}
-              style={[s.input, { fontFamily: t.typography.fontFamily, borderColor: t.colors.outline, borderRadius: t.radius.sm, color: t.colors.onSurface }]}
+            <TextInput placeholder={tx('tripName')} value={editName} onChangeText={(v) => { setEditName(v); setEditFields({}); }}
+              style={[s.input, { fontFamily: t.typography.fontFamily, borderColor: editFields.name ? t.colors.error : t.colors.outline, borderRadius: t.radius.sm, color: t.colors.onSurface }]}
               placeholderTextColor={t.colors.onSurfaceMuted} />
+            {editFields.name ? <Text style={{ color: t.colors.error, fontSize: 11, marginTop: -6 }}>{editFields.name}</Text> : null}
             <View style={s.dateRow}>
               <TextInput placeholder={tx('startDate')} value={editStartDate} onChangeText={setEditStartDate}
                 style={[s.input, s.dateInput, { fontFamily: t.typography.fontFamily, borderColor: t.colors.outline, borderRadius: t.radius.sm, color: t.colors.onSurface }]}
@@ -599,7 +612,7 @@ export function ItineraryScreen({ navigation, route }: Props) {
             </View>
             {editError && <Text style={{ color: t.colors.error, fontSize: 13, marginBottom: 8 }}>{editError}</Text>}
             <View style={s.modalBtns}>
-              <TouchableOpacity onPress={() => setShowEdit(false)}
+              <TouchableOpacity onPress={() => { setShowEdit(false); setEditFields({}); }}
                 style={[s.modalBtn, { borderColor: t.colors.outline, borderRadius: t.radius.sm, borderWidth: 1 }]}>
                 <Text style={{ color: t.colors.onSurface, fontWeight: '500' }}>{tx('cancel')}</Text>
               </TouchableOpacity>
