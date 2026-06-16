@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import {
   View, Text, ScrollView, TouchableOpacity, StyleSheet,
-  Image, TextInput, Alert, ActivityIndicator,
+  Image, TextInput, Alert, ActivityIndicator, Modal,
 } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 import { useTheme } from '../theme';
@@ -36,6 +36,7 @@ export function DestinationDetailScreen({ navigation, route }: Props) {
   const [reviewName, setReviewName] = useState('');
   const [submittingReview, setSubmittingReview] = useState(false);
   const [reviewError, setReviewError] = useState<string | null>(null);
+  const [fullscreen, setFullscreen] = useState(false);
 
   // Load reviews
   useEffect(() => {
@@ -155,12 +156,17 @@ export function DestinationDetailScreen({ navigation, route }: Props) {
           const url = getImageUrl(destination.imageUrl);
           if (url && !imgFailed) {
             return (
-              <Image
-                source={{ uri: url }}
-                style={s.heroImage}
-                resizeMode="cover"
-                onError={() => setImgFailed(true)}
-              />
+              <TouchableOpacity onPress={() => setFullscreen(true)} activeOpacity={0.95}>
+                <Image
+                  source={{ uri: url }}
+                  style={s.heroImage}
+                  resizeMode="cover"
+                  onError={() => setImgFailed(true)}
+                />
+                <View style={s.expandHint}>
+                  <Text style={{ color: '#FFF', fontSize: 18 }}>🔍</Text>
+                </View>
+              </TouchableOpacity>
             );
           }
           return (
@@ -172,6 +178,20 @@ export function DestinationDetailScreen({ navigation, route }: Props) {
             </LinearGradient>
           );
         })()}
+
+        {/* Fullscreen Image Viewer */}
+        <Modal visible={fullscreen} transparent animationType="fade">
+          <View style={{ flex: 1, backgroundColor: 'rgba(0,0,0,0.95)', justifyContent: 'center', alignItems: 'center' }}>
+            <TouchableOpacity style={{ position: 'absolute', top: 50, right: 20, zIndex: 10, padding: 10 }} onPress={() => setFullscreen(false)}>
+              <Text style={{ color: '#FFF', fontSize: 28 }}>✕</Text>
+            </TouchableOpacity>
+            <Image
+              source={{ uri: getImageUrl(destination.imageUrl)?.replace('w=1200', 'w=1600') || '' }}
+              style={{ width: '95%', height: '70%' }}
+              resizeMode="contain"
+            />
+          </View>
+        </Modal>
 
         <View style={{ padding: t.spacing.lg }}>
           {/* Title & Category */}
@@ -310,6 +330,7 @@ const s = StyleSheet.create({
   headerTitle: { marginLeft: 4 },
   heroImage: { width: '100%', height: 240 },
   heroGradient: { width: '100%', height: 240, alignItems: 'center', justifyContent: 'center' },
+  expandHint: { position: 'absolute', bottom: 8, right: 8, backgroundColor: 'rgba(0,0,0,0.5)', borderRadius: 20, width: 32, height: 32, justifyContent: 'center', alignItems: 'center' },
   titleRow: { flexDirection: 'row', alignItems: 'flex-start', gap: 12, marginTop: 4 },
   name: {},
   category: { marginTop: 4 },
