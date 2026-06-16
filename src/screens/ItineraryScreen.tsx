@@ -92,8 +92,8 @@ export function ItineraryScreen({ navigation, route }: Props) {
             }
           });
         });
-        // Fetch weather for each location (max 3, with delay to avoid rate limit)
-        const limitedLocations = locations.slice(0, 3);
+        // Fetch weather for each location (max 5)
+        const limitedLocations = locations.slice(0, 5);
         const weatherItems: {label: string; temp: string; cond: string}[] = [];
         for (const loc of limitedLocations) {
           try {
@@ -124,6 +124,33 @@ export function ItineraryScreen({ navigation, route }: Props) {
   useEffect(() => {
     loadItineraries();
   }, [loadItineraries]);
+
+  // Reload weather when switching itineraries
+  useEffect(() => {
+    const it = itineraries[activeIndex];
+    if (!it) return;
+    (async () => {
+      const locations: {label: string; loc: string}[] = [{ label: td(lang, it.destination)?.name || it.destination, loc: it.destination }];
+      it.days?.forEach((day: any) => {
+        day.activities?.forEach((act: any) => {
+          if (act.location && !locations.find((l) => l.loc === act.location)) {
+            locations.push({ label: act.location + (act.title ? ` (${act.title.slice(0,8)})` : ''), loc: act.location });
+          }
+        });
+      });
+      const limitedLocations = locations.slice(0, 5);
+      const weatherItems: {label: string; temp: string; cond: string}[] = [];
+      for (const loc of limitedLocations) {
+        try {
+          const { data } = await (await import('../services/api')).default.get('/weather', { params: { city: loc.loc } });
+          weatherItems.push({ label: loc.label, temp: data.temp || '--', cond: data.condition || '' });
+        } catch { weatherItems.push({ label: loc.label, temp: '--', cond: '' }); }
+        await new Promise((r) => setTimeout(r, 300));
+      }
+      setWeatherData(weatherItems.filter((w) => w.temp !== '--'));
+      setWeatherIndex(0);
+    })();
+  }, [activeIndex]);
 
   // Reload when tab is focused (after adding activity from map, etc.)
   useEffect(() => {

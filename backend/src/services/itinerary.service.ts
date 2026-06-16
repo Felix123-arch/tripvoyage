@@ -112,7 +112,45 @@ export async function updateItinerary(id: string, userId: string, data: Partial<
   const it = await prisma.itinerary.findFirst({ where: { id, userId } });
   if (!it) return null;
 
-  return prisma.itinerary.update({
+  // If dates changed, recalculate days
+  const newStart = data.startDate || it.startDate;
+  const newEnd = data.endDate || it.endDate;
+
+  if (data.startDate || data.endDate) {
+    const start = new Date(newStart);
+    const end = new Date(newEnd);
+    const newCount = Math.max(1, Math.ceil((end.getTime() - start.getTime()) / (1000 * 60 * 60 * 24)) + 1);
+    const currentDays = await prisma.itineraryDay.findMany({ where: { itineraryId: id }, orderBy: { dayNumber: 'asc' } });
+    const currentCount = currentDays.length;
+
+    // Remove extra days if new date range is shorter
+    if (newCount < currentCount) {
+      const daysToRemove = currentDays.slice(newCount);
+      for (const day of daysToRemove) {
+        await prisma.activity.deleteMany({ where: { dayId: day.id } });
+        await prisma.itineraryDay.delete({ where: { id: day.id } });
+      }
+    }
+    // Add new days if new date range is longer
+    for (let i = currentCount; i < newCount; i++) {
+      const d = new Date(start);
+      d.setDate(d.getDate() + i);
+      await prisma.itineraryDay.create({
+        data: { itineraryId: id, dayNumber: i + 1, date: d.toISOString().split('T')[0] },
+      });
+    }
+    // Update existing day dates
+    for (let i = 0; i < Math.min(currentCount, newCount); i++) {
+      const d = new Date(start);
+      d.setDate(d.getDate() + i);
+      await prisma.itineraryDay.update({
+        where: { id: currentDays[i].id },
+        data: { date: d.toISOString().split('T')[0] },
+      });
+    }
+  }
+
+  const updated = await prisma.itinerary.update({
     where: { id },
     data: {
       name: data.name,
@@ -126,6 +164,8 @@ export async function updateItinerary(id: string, userId: string, data: Partial<
     },
     include: { days: { include: { activities: true } } },
   });
+
+  return updated;
 }
 
 export async function deleteItinerary(id: string, userId: string) {
