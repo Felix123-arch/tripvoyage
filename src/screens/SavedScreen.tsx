@@ -25,6 +25,7 @@ export function SavedScreen({ navigation }: Props) {
   const [pastTrips, setPastTrips] = useState<api.Itinerary[]>([]);
   const [savedDestinations, setSavedDestinations] = useState<api.SavedDestination[]>([]);
   const [wishlistItems, setWishlistItems] = useState<api.WishlistItem[]>([]);
+  const [allDestinations, setAllDestinations] = useState<api.Destination[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
@@ -38,14 +39,16 @@ export function SavedScreen({ navigation }: Props) {
     setLoading(true);
     setError(null);
     try {
-      const [trips, saved, wishlist] = await Promise.all([
+      const [trips, saved, wishlist, dests] = await Promise.all([
         api.getItineraries('completed').catch(() => [] as api.Itinerary[]),
         isAuthenticated ? api.getSaved().catch(() => [] as api.SavedDestination[]) : Promise.resolve([] as api.SavedDestination[]),
         isAuthenticated ? api.getWishlist().catch(() => [] as api.WishlistItem[]) : Promise.resolve([] as api.WishlistItem[]),
+        api.getDestinations().catch(() => [] as api.Destination[]),
       ]);
       setPastTrips(trips);
       setSavedDestinations(saved);
       setWishlistItems(wishlist);
+      setAllDestinations(dests);
     } catch (err: any) {
       setError(err.response?.data?.error || err.message || 'Failed to load');
     } finally {
@@ -161,16 +164,19 @@ export function SavedScreen({ navigation }: Props) {
                       onPress={() => handleTripPress(trip)}
                       style={[s.tripCard, { backgroundColor: t.colors.surface, borderRadius: t.radius.md, borderColor: t.colors.outline, borderWidth: 1 }]}
                     >
-                      <LinearGradient
-                        colors={(() => {
-                          const palettes: [string,string][] = [['#2563EB','#7C3AED'],['#059669','#06B6D4'],['#D97706','#DC2626'],['#7C3AED','#EC4899'],['#0891B2','#10B981'],['#4F46E5','#06B6D4']];
-                          const idx = trip.id.split('').reduce((s,c)=>s+c.charCodeAt(0),0) % palettes.length;
-                          return palettes[idx];
-                        })()}
-                        style={[s.tripThumb, { borderRadius: t.radius.sm, width: 64, height: 64 }]}
-                      >
-                        <Text style={[s.tripThumbIcon, { color: '#FFF', fontWeight: '800', fontSize: 16 }]}>TripVoyage</Text>
-                      </LinearGradient>
+                      {(() => {
+                        const dest = allDestinations.find((d) => d.id === trip.destinationId);
+                        if (dest?.imageUrl) {
+                          return <Image source={{ uri: getImageUrl(dest.imageUrl) }} style={[s.tripThumb, { borderRadius: t.radius.sm, width: 64, height: 64 }]} />;
+                        }
+                        const palettes: [string,string][] = [['#2563EB','#7C3AED'],['#059669','#06B6D4'],['#D97706','#DC2626'],['#7C3AED','#EC4899'],['#0891B2','#10B981'],['#4F46E5','#06B6D4']];
+                        const idx = trip.id.split('').reduce((s: number,c: string)=>s+c.charCodeAt(0),0) % palettes.length;
+                        return (
+                          <LinearGradient colors={palettes[idx]} style={[s.tripThumb, { borderRadius: t.radius.sm, width: 64, height: 64 }]}>
+                            <Text style={[s.tripThumbIcon, { color: '#FFF', fontWeight: '800', fontSize: 14 }]}>TripVoyage</Text>
+                          </LinearGradient>
+                        );
+                      })()}
                       <View style={[s.tripInfo, { marginLeft: t.spacing.md }]}>
                         <Text style={{ fontWeight: '600', fontSize: t.typography.body.fontSize, color: t.colors.onSurface }}>
                           {td(lang, trip.destination)?.name || trip.destination}
