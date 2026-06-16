@@ -53,6 +53,7 @@ export function MapScreen({ navigation, route }: Props) {
   const [showItineraryModal, setShowItineraryModal] = useState(false);
   const [addingToItinerary, setAddingToItinerary] = useState(false);
   const [imgFailed, setImgFailed] = useState(false);
+  const [sheetFullscreen, setSheetFullscreen] = useState(false);
 
   const mapContainerRef = useRef<HTMLDivElement | null>(null);
   const mapInstance = useRef<any>(null);
@@ -399,13 +400,18 @@ export function MapScreen({ navigation, route }: Props) {
             const img = getPinImage(selectedPin);
             if (img && !imgFailed) {
               return (
-                <View style={{ width: '100%', height: 180, borderRadius: 12, overflow: 'hidden', marginBottom: 12 }}>
-                  <Image source={{ uri: img }}
-                    style={{ width: '100%', height: '100%' }}
-                    resizeMode="cover"
-                    onError={() => setImgFailed(true)}
-                  />
-                </View>
+                <TouchableOpacity onPress={() => setSheetFullscreen(true)}>
+                  <View style={{ width: '100%', height: 180, borderRadius: 12, overflow: 'hidden', marginBottom: 12 }}>
+                    <Image source={{ uri: img }}
+                      style={{ width: '100%', height: '100%' }}
+                      resizeMode="cover"
+                      onError={() => setImgFailed(true)}
+                    />
+                  </View>
+                  <View style={{ position: 'absolute', bottom: 20, right: 8, backgroundColor: 'rgba(0,0,0,0.5)', borderRadius: 20, width: 28, height: 28, justifyContent: 'center', alignItems: 'center' }}>
+                    <Text style={{ color: '#FFF', fontSize: 14 }}>🔍</Text>
+                  </View>
+                </TouchableOpacity>
               );
             }
             return (
@@ -455,6 +461,16 @@ export function MapScreen({ navigation, route }: Props) {
           </View>
         </View>
       )}
+
+      {/* Fullscreen Image Modal */}
+      <Modal visible={sheetFullscreen} transparent animationType="fade">
+        <View style={{ flex: 1, backgroundColor: 'rgba(0,0,0,0.95)', justifyContent: 'center', alignItems: 'center' }}>
+          <TouchableOpacity style={{ position: 'absolute', top: 50, right: 20, zIndex: 10, padding: 10 }} onPress={() => setSheetFullscreen(false)}>
+            <Text style={{ color: '#FFF', fontSize: 32 }}>✕</Text>
+          </TouchableOpacity>
+          {selectedPin && <Image source={{ uri: getPinImage(selectedPin) || '' }} style={{ width: '95%', height: '70%' }} resizeMode="contain" />}
+        </View>
+      </Modal>
 
       {/* Itinerary Selection Modal */}
       <Modal visible={showItineraryModal} transparent animationType="slide">
