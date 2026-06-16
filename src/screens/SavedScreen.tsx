@@ -108,10 +108,12 @@ export function SavedScreen({ navigation }: Props) {
     return true;
   });
 
+  const palette: [string,string][] = [['#2563EB','#7C3AED'],['#059669','#06B6D4'],['#D97706','#DC2626'],['#7C3AED','#EC4899'],['#0891B2','#10B981'],['#4F46E5','#06B6D4']];
   const memoryItems = filteredTrips.slice(0, 6).map((trip, i) => ({
     id: trip.id,
     title: trip.destination,
-    gradient: [['#065F46', '#10B981'], ['#1E40AF', '#3B82F6'], ['#991B1B', '#EF4444'], ['#92400E', '#F59E0B'], ['#5B21B6', '#8B5CF6'], ['#064E3B', '#34D399']][i % 6] as string[],
+    gradient: palette[i % palette.length],
+    imageUrl: allDestinations.find((d) => d.id === trip.destinationId)?.imageUrl || null,
   }));
 
   return (

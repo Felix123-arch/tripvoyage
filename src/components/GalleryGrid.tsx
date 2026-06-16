@@ -1,10 +1,10 @@
-import { View, Text, StyleSheet } from 'react-native';
+import { View, Text, Image, StyleSheet } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 import { useTheme } from '../theme';
-import type { MemoryItem } from '../data';
+import { getImageUrl } from '../utils/imageProxy';
 
 interface Props {
-  items: MemoryItem[];
+  items: { id: string; title: string; gradient: string[]; imageUrl?: string | null }[];
 }
 
 export function GalleryGrid({ items }: Props) {
@@ -13,15 +13,16 @@ export function GalleryGrid({ items }: Props) {
   return (
     <View style={s.grid}>
       {items.map((item) => (
-        <View
-          key={item.id}
-          style={[s.item, { borderRadius: t.radius.md, overflow: 'hidden', height: 100 }]}
-        >
-          <LinearGradient colors={item.gradient as unknown as readonly [string, string]} style={s.gradient}>
-            <Text style={[s.title, { fontFamily: t.typography.fontFamily, fontWeight: '600', fontSize: t.typography.bodySm.fontSize, color: '#fff' }]}>
-              {item.title}
-            </Text>
-          </LinearGradient>
+        <View key={item.id} style={[s.item, { borderRadius: t.radius.md, overflow: 'hidden', height: 100 }]}>
+          {item.imageUrl ? (
+            <Image source={{ uri: getImageUrl(item.imageUrl) || '' }} style={s.gradient} />
+          ) : (
+            <LinearGradient colors={item.gradient as unknown as readonly [string, string]} style={s.gradient}>
+              <Text style={[s.title, { fontFamily: t.typography.fontFamily, fontWeight: '600', fontSize: t.typography.bodySm.fontSize, color: '#fff' }]}>
+                {item.title}
+              </Text>
+            </LinearGradient>
+          )}
         </View>
       ))}
     </View>
