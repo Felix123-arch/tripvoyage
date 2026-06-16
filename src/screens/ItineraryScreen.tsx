@@ -54,7 +54,7 @@ export function ItineraryScreen({ navigation, route }: Props) {
   const [showAddActivity, setShowAddActivity] = useState(false);
   const [actTitle, setActTitle] = useState('');
   const [actType, setActType] = useState('sightseeing');
-  const [actDayNum, setActDayNum] = useState(1);
+  const [actDayStr, setActDayStr] = useState('1');
   const [actTime, setActTime] = useState('');
   const [actLocation, setActLocation] = useState('');
   const [actDesc, setActDesc] = useState('');
@@ -215,7 +215,12 @@ export function ItineraryScreen({ navigation, route }: Props) {
       return;
     }
 
-    const day = itinerary.days.find((d) => d.dayNumber === actDayNum) || itinerary.days[0];
+    const dayNum = parseInt(actDayStr) || 1;
+    if (dayNum < 1 || dayNum > itinerary.days.length) {
+      setActivityError(`${tx('day')} 1-${itinerary.days.length}`);
+      return;
+    }
+    const day = itinerary.days.find((d) => d.dayNumber === dayNum) || itinerary.days[0];
     if (!day) {
       setActivityError(tx('dayNotFound') || 'Day not found.');
       return;
@@ -250,7 +255,7 @@ export function ItineraryScreen({ navigation, route }: Props) {
       );
 
       setShowAddActivity(false);
-      setActTitle('');
+      setActTitle(''); setActDayStr('1');
       setActTime('');
       setActLocation('');
       setActDesc('');
@@ -464,7 +469,7 @@ export function ItineraryScreen({ navigation, route }: Props) {
             <View style={s.dateRow}>
               <View style={{ flex: 1 }}>
                 <Text style={[s.inputLabel, { color: t.colors.onSurfaceMuted }]}>{tx('day')} (1-{itinerary.days.length})</Text>
-                <TextInput value={String(actDayNum)} onChangeText={(v) => { const n = parseInt(v); if (!isNaN(n) && n >= 1 && n <= itinerary.days.length) setActDayNum(n); }}
+                <TextInput value={actDayStr} onChangeText={setActDayStr}
                   style={[s.input, { fontFamily: t.typography.fontFamily, borderColor: t.colors.outline, borderRadius: t.radius.sm, color: t.colors.onSurface }]}
                   placeholderTextColor={t.colors.onSurfaceMuted} />
               </View>
