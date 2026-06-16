@@ -161,20 +161,16 @@ export function SavedScreen({ navigation }: Props) {
                       onPress={() => handleTripPress(trip)}
                       style={[s.tripCard, { backgroundColor: t.colors.surface, borderRadius: t.radius.md, borderColor: t.colors.outline, borderWidth: 1 }]}
                     >
-                      {trip.destinationId && destinations.find((d) => d.id === trip.destinationId)?.imageUrl ? (
-                        <Image source={{ uri: getImageUrl(destinations.find((d) => d.id === trip.destinationId)!.imageUrl!) }} style={[s.tripThumb, { borderRadius: t.radius.sm, width: 64, height: 64 }]} />
-                      ) : (
-                        <LinearGradient
-                          colors={(() => {
-                            const palettes = [['#2563EB','#7C3AED'],['#059669','#06B6D4'],['#D97706','#DC2626'],['#7C3AED','#EC4899'],['#0891B2','#10B981'],['#4F46E5','#06B6D4']];
-                            const idx = trip.id.split('').reduce((s,c)=>s+c.charCodeAt(0),0) % palettes.length;
-                            return palettes[idx] as [string,string];
-                          })()}
-                          style={[s.tripThumb, { borderRadius: t.radius.sm, width: 64, height: 64, alignItems: 'center', justifyContent: 'center' }]}
-                        >
-                          <Text style={[s.tripThumbIcon, { color: '#FFF', fontWeight: '800', fontSize: 18 }]}>TV</Text>
-                        </LinearGradient>
-                      )}
+                      <LinearGradient
+                        colors={(() => {
+                          const palettes: [string,string][] = [['#2563EB','#7C3AED'],['#059669','#06B6D4'],['#D97706','#DC2626'],['#7C3AED','#EC4899'],['#0891B2','#10B981'],['#4F46E5','#06B6D4']];
+                          const idx = trip.id.split('').reduce((s,c)=>s+c.charCodeAt(0),0) % palettes.length;
+                          return palettes[idx];
+                        })()}
+                        style={[s.tripThumb, { borderRadius: t.radius.sm, width: 64, height: 64 }]}
+                      >
+                        <Text style={[s.tripThumbIcon, { color: '#FFF', fontWeight: '800', fontSize: 16 }]}>TripVoyage</Text>
+                      </LinearGradient>
                       <View style={[s.tripInfo, { marginLeft: t.spacing.md }]}>
                         <Text style={{ fontWeight: '600', fontSize: t.typography.body.fontSize, color: t.colors.onSurface }}>
                           {td(lang, trip.destination)?.name || trip.destination}
