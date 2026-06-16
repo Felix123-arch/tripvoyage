@@ -181,10 +181,18 @@ export function ItineraryScreen({ navigation, route }: Props) {
       return;
     }
     const itinerary = itineraries[activeIndex];
-    if (!itinerary || itinerary.days.length === 0) return;
+    if (!itinerary) return;
+    if (itinerary.days.length === 0) {
+      // Auto-create first day if missing (legacy data or server issue)
+      setActivityError(tx('noDays') || 'No days in itinerary.');
+      return;
+    }
 
     const day = itinerary.days.find((d) => d.dayNumber === actDayNum) || itinerary.days[0];
-    if (!day) return;
+    if (!day) {
+      setActivityError(tx('dayNotFound') || 'Day not found.');
+      return;
+    }
 
     setAddingActivity(true);
     setActivityError(null);
