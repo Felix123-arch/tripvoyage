@@ -463,8 +463,8 @@ export function ItineraryScreen({ navigation, route }: Props) {
             </ScrollView>
             <View style={s.dateRow}>
               <View style={{ flex: 1 }}>
-                <Text style={[s.inputLabel, { color: t.colors.onSurfaceMuted }]}>{tx('day')}</Text>
-                <TextInput value={String(actDayNum)} onChangeText={(v) => { const n = parseInt(v); if (!isNaN(n) && n >= 1) setActDayNum(n); else if (v === '') setActDayNum(1); }} keyboardType="numeric"
+                <Text style={[s.inputLabel, { color: t.colors.onSurfaceMuted }]}>{tx('day')} (1-{itinerary.days.length})</Text>
+                <TextInput value={String(actDayNum)} onChangeText={(v) => { const n = parseInt(v); if (!isNaN(n) && n >= 1 && n <= itinerary.days.length) setActDayNum(n); else if (v === '') setActDayNum(1); }} inputMode="numeric"
                   style={[s.input, { fontFamily: t.typography.fontFamily, borderColor: t.colors.outline, borderRadius: t.radius.sm, color: t.colors.onSurface }]}
                   placeholderTextColor={t.colors.onSurfaceMuted} />
               </View>
