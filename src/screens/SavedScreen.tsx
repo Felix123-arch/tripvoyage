@@ -167,7 +167,7 @@ export function SavedScreen({ navigation }: Props) {
                       {(() => {
                         const dest = allDestinations.find((d) => d.id === trip.destinationId);
                         if (dest?.imageUrl) {
-                          return <Image source={{ uri: getImageUrl(dest.imageUrl) }} style={[s.tripThumb, { borderRadius: t.radius.sm, width: 64, height: 64 }]} />;
+                          return <Image source={{ uri: getImageUrl(dest.imageUrl) || '' }} style={[s.tripThumb, { borderRadius: t.radius.sm, width: 64, height: 64 }]} />;
                         }
                         const palettes: [string,string][] = [['#2563EB','#7C3AED'],['#059669','#06B6D4'],['#D97706','#DC2626'],['#7C3AED','#EC4899'],['#0891B2','#10B981'],['#4F46E5','#06B6D4']];
                         const idx = trip.id.split('').reduce((s: number,c: string)=>s+c.charCodeAt(0),0) % palettes.length;
