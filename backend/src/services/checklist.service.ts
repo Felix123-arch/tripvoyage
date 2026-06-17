@@ -4,6 +4,7 @@ import { prisma } from '../lib/prisma.js';
 export const createChecklistSchema = z.object({
   label: z.string().min(1),
   itineraryId: z.string().optional(),
+  category: z.string().optional(),
 });
 
 export const updateChecklistSchema = z.object({
@@ -11,16 +12,15 @@ export const updateChecklistSchema = z.object({
   completed: z.boolean().optional(),
 });
 
-export async function getUserChecklist(userId: string) {
-  return prisma.checklistItem.findMany({
-    where: { userId },
-    orderBy: { createdAt: 'asc' },
-  });
+export async function getUserChecklist(userId: string, itineraryId?: string) {
+  const where: any = { userId };
+  if (itineraryId) where.itineraryId = itineraryId;
+  return prisma.checklistItem.findMany({ where, orderBy: { createdAt: 'asc' } });
 }
 
 export async function createChecklistItem(userId: string, data: z.infer<typeof createChecklistSchema>) {
   return prisma.checklistItem.create({
-    data: { userId, label: data.label },
+    data: { userId, label: data.label, itineraryId: data.itineraryId, category: data.category || 'other' },
   });
 }
 

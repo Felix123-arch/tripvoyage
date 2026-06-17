@@ -61,6 +61,11 @@ export function ItineraryScreen({ navigation, route }: Props) {
   const [addingActivity, setAddingActivity] = useState(false);
   const [activityError, setActivityError] = useState<string | null>(null);
 
+  // Checklist
+  const [checklist, setChecklist] = useState<api.ChecklistItem[]>([]);
+  const [newItemLabel, setNewItemLabel] = useState('');
+  const [loadingChecklist, setLoadingChecklist] = useState(false);
+
   const loadItineraries = useCallback(async () => {
     setLoading(true);
     setError(null);
@@ -124,6 +129,52 @@ export function ItineraryScreen({ navigation, route }: Props) {
   useEffect(() => {
     loadItineraries();
   }, [loadItineraries]);
+
+  // Load checklist for current itinerary
+  useEffect(() => {
+    const it = itineraries[activeIndex];
+    if (!it || isGuest) return;
+    setLoadingChecklist(true);
+    api.getChecklist(it.id)
+      .then(setChecklist)
+      .catch(() => {})
+      .finally(() => setLoadingChecklist(false));
+  }, [activeIndex, itineraries, isGuest]);
+
+  // Preset templates by destination type
+  const addPresetItems = () => {
+    const it = itineraries[activeIndex];
+    if (!it) return;
+    const dest = it.destination.toLowerCase();
+    const presets: string[] = ['Passport/Visa', 'Flight tickets', 'Hotel reservation', 'Travel insurance', 'Phone charger', 'Comfortable shoes'];
+    if (dest.includes('beach') || dest.includes('bali') || dest.includes('maldives') || dest.includes('phuket')) {
+      presets.push('Sunscreen', 'Swimwear', 'Sunglasses', 'Beach towel');
+    } else if (dest.includes('ski') || dest.includes('alps') || dest.includes('banff')) {
+      presets.push('Ski jacket', 'Thermal underwear', 'Gloves', 'Ski goggles');
+    } else if (dest.includes('tokyo') || dest.includes('paris') || dest.includes('new york')) {
+      presets.push('City map', 'Metro card', 'Power bank', 'Comfortable backpack');
+    }
+    presets.forEach((label) => {
+      api.createChecklistItem(label, it.id).then((item) => setChecklist((p) => [...p, item])).catch(() => {});
+    });
+  };
+
+  const toggleChecklistItem = async (id: string) => {
+    const item = checklist.find((i) => i.id === id);
+    if (!item) return;
+    setChecklist((p) => p.map((i) => i.id === id ? { ...i, completed: !i.completed } : i));
+    try { await api.updateChecklistItem(id, { completed: !item.completed }); } catch { setChecklist((p) => p.map((i) => i.id === id ? { ...i, completed: item.completed } : i)); }
+  };
+
+  const addChecklistItem = async () => {
+    const it = itineraries[activeIndex];
+    if (!newItemLabel.trim() || !it) return;
+    try {
+      const item = await api.createChecklistItem(newItemLabel.trim(), it.id);
+      setChecklist((p) => [...p, item]);
+      setNewItemLabel('');
+    } catch {}
+  };
 
   // Reload weather when switching itineraries
   useEffect(() => {
@@ -593,6 +644,51 @@ export function ItineraryScreen({ navigation, route }: Props) {
         <View style={{ paddingHorizontal: t.spacing.lg, marginTop: t.spacing.xl }}>
           <Timeline days={days} />
         </View>
+
+        {/* Checklist Section */}
+        {!isGuest && (
+          <View style={{ paddingHorizontal: t.spacing.lg, marginTop: t.spacing.xl }}>
+            <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 8 }}>
+              <Text style={{ fontWeight: '600', fontSize: 16, color: t.colors.onSurface }}>
+                {tx('checklist')} ({checklist.filter((c) => c.completed).length}/{checklist.length})
+              </Text>
+              <TouchableOpacity onPress={addPresetItems} disabled={checklist.length > 0}>
+                <Text style={{ color: checklist.length > 0 ? t.colors.onSurfaceMuted : t.colors.primary, fontWeight: '500', fontSize: 13 }}>
+                  + {tx('presets')}
+                </Text>
+              </TouchableOpacity>
+            </View>
+            {/* Progress bar */}
+            {checklist.length > 0 && (
+              <View style={{ height: 4, backgroundColor: t.colors.outline, borderRadius: 2, marginBottom: 10 }}>
+                <View style={{ height: 4, backgroundColor: t.colors.primary, borderRadius: 2, width: `${(checklist.filter((c) => c.completed).length / checklist.length) * 100}%` }} />
+              </View>
+            )}
+            {/* Add item */}
+            <View style={{ flexDirection: 'row', gap: 8, marginBottom: 8 }}>
+              <TextInput value={newItemLabel} onChangeText={setNewItemLabel} placeholder={tx('addItem')}
+                style={{ flex: 1, height: 36, borderWidth: 1, borderColor: t.colors.outline, borderRadius: 8, paddingHorizontal: 12, fontSize: 13, color: t.colors.onSurface }}
+                placeholderTextColor={t.colors.onSurfaceMuted} />
+              <TouchableOpacity onPress={addChecklistItem} style={{ height: 36, paddingHorizontal: 14, backgroundColor: t.colors.primary, borderRadius: 8, justifyContent: 'center' }}>
+                <Text style={{ color: '#FFF', fontWeight: '600', fontSize: 13 }}>{tx('add')}</Text>
+              </TouchableOpacity>
+            </View>
+            {/* Items */}
+            {checklist.map((item) => (
+              <TouchableOpacity key={item.id} onPress={() => toggleChecklistItem(item.id)} style={{ flexDirection: 'row', alignItems: 'center', paddingVertical: 6, gap: 8 }}>
+                <View style={{ width: 20, height: 20, borderRadius: 4, borderWidth: 2, borderColor: item.completed ? t.colors.primary : t.colors.outline, backgroundColor: item.completed ? t.colors.primary : 'transparent', justifyContent: 'center', alignItems: 'center' }}>
+                  {item.completed && <Text style={{ color: '#FFF', fontSize: 12 }}>✓</Text>}
+                </View>
+                <Text style={{ flex: 1, fontSize: 14, color: item.completed ? t.colors.onSurfaceMuted : t.colors.onSurface, textDecorationLine: item.completed ? 'line-through' : 'none' }}>
+                  {item.label}
+                </Text>
+                <TouchableOpacity onPress={() => { api.deleteChecklistItem(item.id); setChecklist((p) => p.filter((x) => x.id !== item.id)); }}>
+                  <Text style={{ color: t.colors.error, fontSize: 14 }}>✕</Text>
+                </TouchableOpacity>
+              </TouchableOpacity>
+            ))}
+          </View>
+        )}
 
         <View style={{ paddingHorizontal: t.spacing.lg, marginTop: t.spacing.xl }}>
           <View style={s.fabRow}>

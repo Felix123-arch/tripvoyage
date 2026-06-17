@@ -108,13 +108,16 @@ model Activity {
 }
 
 model ChecklistItem {
-  id        String   @id @default(uuid())
-  userId    String
-  label     String
-  completed Boolean  @default(false)
-  createdAt DateTime @default(now())
+  id          String   @id @default(uuid())
+  userId      String
+  itineraryId String?
+  label       String
+  completed   Boolean  @default(false)
+  category    String   @default("other")
+  createdAt   DateTime @default(now())
 
-  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  user      User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  itinerary Itinerary? @relation(fields: [itineraryId], references: [id], onDelete: Cascade)
 }
 
 model Article {

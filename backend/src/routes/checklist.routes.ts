@@ -9,7 +9,7 @@ checklistRoutes.use(authMiddleware);
 
 checklistRoutes.get('/', async (req: Request, res: Response, next: NextFunction) => {
   try {
-    const items = await checklistService.getUserChecklist(req.user!.id);
+    const items = await checklistService.getUserChecklist(req.user!.id, req.query.itineraryId as string | undefined);
     res.json(items);
   } catch (err) {
     next(err);
